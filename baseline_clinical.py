@@ -13,7 +13,7 @@ import math
 #           - 0.5695 x Amiodarone status
 
 if __name__ == "__main__":
-    rows = load_dataset_fixed_dose()
+    rows = load_dataset_clinical()
 
     total_reward = 0
     optimal = 0
@@ -27,7 +27,7 @@ if __name__ == "__main__":
                      + 0.0134 * row["weight"]  - 0.6752 * row["race_asian"] + 0.4060 * row["race_black"] \
                      + 0.0443 * row["race_missing"] + 1.2799 * row["enzyme"] - 0.5695 * row["amiodarone"]
 
-        prediction = mg_to_dose(prediction**2)
+        prediction = mg_to_dose(math.pow(prediction, 2))
         target = row["label"]
 
         total_reward += INCORRECT_DOSE_REWARD if prediction != target else CORRECT_DOSE_REWARD
@@ -39,4 +39,3 @@ if __name__ == "__main__":
 
     print("Accuracy:     ", float(correct_predictions) / total_predictions)
     print("Total regret: ", total_regret)
-    print("Rowcount:     ", len(rows))

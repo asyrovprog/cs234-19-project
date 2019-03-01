@@ -25,7 +25,6 @@ if __name__ == "__main__":
 
     print("Accuracy:     ", float(correct_predictions) / total_predictions)
     print("Total regret: ", total_regret)
-    print("Rowcount:     ", len(rows) - undefined_targets)
 
 
 

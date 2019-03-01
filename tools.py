@@ -26,12 +26,15 @@ def undefined(s):
 
 #
 # convert dose (string) to na/low/med/high integers
+#      0 - <21 mg/week  (LOW)
+#      1 - <=49 mg/week  (MEDIUM)
+#      2 - else mg/week  (HIGH)
 #
 def mg_to_dose(d):
     if undefined(d):
         return DOSE_NA
     d = float(d)
-    if d <= 21:
+    if d < 21:
         return DOSE_LOW
     return DOSE_MED if d <= 49 else DOSE_HIGH
 
@@ -53,35 +56,26 @@ def get_float_fld(row, fld):
 
 def get_race(row, expected):
     v = row[RACE]
-    return 1 if v == expected else 0
+    return 1 if v.lower() == expected.lower() else 0
 
 #
 # For Baselines/Fixed Dose we just need one field "Therapeutic Dose of Warfarin"
-# converted to:
-#      0 -  0..21 mg/week  (LOW)
-#      1 - 21..49 mg/week  (MEDIUM)
-#      2 - 21..49 mg/week  (HIGH)
 #
 def load_dataset_fixed_dose():
     rows = load_dataset()
     ds = [mg_to_dose(row[TARGET]) for row in rows]
+    missing_data = sum([1 if v == DOSE_NA else 0 for v in ds])
+    if missing_data > 0:
+        print("WARNING: ", missing_data, " records have missing data. They will not be processed.")
     return ds
 
 #
-# For Baselines/Clinical:
-#           4.0376
-#           - 0.2546 x Age in decades
-#           + 0.0118 x Height in cm
-#           + 0.0134 x Weight in kg
-#           - 0.6752 x Asian race
-#           + 0.4060 x Black or African American
-#           + 0.0443 x Missing or Mixed race
-#           + 1.2799 x Enzyme inducer status
-#           - 0.5695 x Amiodarone status
+# For Baselines Clinical
 #
-def load_dataset_fixed_dose():
+def load_dataset_clinical():
     rows = load_dataset()
     result = []
+    missing_count = 0
     for row in rows:
         age = get_age_decades(row)
         label = mg_to_dose(row[TARGET])
@@ -92,14 +86,24 @@ def load_dataset_fixed_dose():
 
             asian = get_race(row, "Asian")
             black = get_race(row, "Black or African American")
-            missing = 1 if row[RACE] == "" or row[RACE] == "NA" or row[RACE] == "unspecified or mixed" else 0
-            meds = {m.strip(" ") for m in row[MEDICATIONS].split(";")}
-            enzyme = 1 if  {"carbamazepine", "phenytoin", "rifampin", "rifampicin"} & meds else 0
-            amiodarone = 1 if "amiodarone" in meds else 0
+            missing = 1 if row[RACE].lower() in {"", "na", "unknown"} else 0
+
+            meds = {m.strip(" ").lower() for m in row[MEDICATIONS].split(";")}
+
+            enzyme = 1 if  {"carbamazepine", "phenytoin", "rifampin", "rifampicin"} & meds \
+                or row["Rifampin or Rifampicin"] == "1" \
+                or row["Carbamazepine (Tegretol)"] == "1"\
+                or row["Phenytoin (Dilantin)"] == "1" else 0
+
+            amiodarone = 1 if "amiodarone" in meds \
+                or row["Amiodarone (Cordarone)"] == "1" else 0
 
             result.append({ "label": label, "age":  age, "height" : height, "weight": weight, "race_asian": asian,
                             "race_black": black, "race_missing": missing, "enzyme": enzyme, "amiodarone": amiodarone})
-        else:
-            pass
 
+        else:
+            missing_count += 1
+
+    if missing_count > 0:
+        print("WARNING: ", missing_count, " records have missing data. They will not be processed." )
     return result
