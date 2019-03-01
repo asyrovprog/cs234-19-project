@@ -1,13 +1,10 @@
 # Sources for CS234 Project - Estimation of the Warfarin Dose
 
-Files:
+## Files:
 
 /data - contains provided warfarin.csv dataset and support files
-
 tools.py - utilities to load and preprocess warfarin dataset
-
 baseline_fixed_dose.py - implementation of fixed dose algorithm
-
 baseline_clinical.py - implementation of Warfarin Clinical Dosing Algorithm
 
 
