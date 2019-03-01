@@ -90,7 +90,7 @@ def load_dataset_clinical():
 
             meds = {m.strip(" ").lower() for m in row[MEDICATIONS].split(";")}
 
-            enzyme = 1 if  {"carbamazepine", "phenytoin", "rifampin", "rifampicin"} & meds \
+            enzyme = 1 if {"carbamazepine", "phenytoin", "rifampin", "rifampicin"} & meds \
                 or row["Rifampin or Rifampicin"] == "1" \
                 or row["Carbamazepine (Tegretol)"] == "1"\
                 or row["Phenytoin (Dilantin)"] == "1" else 0
@@ -100,7 +100,6 @@ def load_dataset_clinical():
 
             result.append({ "label": label, "age":  age, "height" : height, "weight": weight, "race_asian": asian,
                             "race_black": black, "race_missing": missing, "enzyme": enzyme, "amiodarone": amiodarone})
-
         else:
             missing_count += 1
 

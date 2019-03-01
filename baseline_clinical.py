@@ -23,9 +23,15 @@ if __name__ == "__main__":
     correct_predictions = 0
 
     for row in rows:
-        prediction = 4.0376 - 0.2546 * row["age"] + 0.0118 * row["height"] \
-                     + 0.0134 * row["weight"]  - 0.6752 * row["race_asian"] + 0.4060 * row["race_black"] \
-                     + 0.0443 * row["race_missing"] + 1.2799 * row["enzyme"] - 0.5695 * row["amiodarone"]
+        prediction = 4.0376 \
+                     - 0.2546 * row["age"] \
+                     + 0.0118 * row["height"] \
+                     + 0.0134 * row["weight"]  \
+                     - 0.6752 * row["race_asian"] \
+                     + 0.4060 * row["race_black"] \
+                     + 0.0443 * row["race_missing"] \
+                     + 1.2799 * row["enzyme"] \
+                     - 0.5695 * row["amiodarone"]
 
         prediction = mg_to_dose(math.pow(prediction, 2))
         target = row["label"]
