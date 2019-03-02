@@ -6,6 +6,7 @@
 - `tools.py` - utilities to load and preprocess warfarin dataset
 - `baseline_fixed_dose.py` - implementation of fixed dose algorithm
 - `baseline_clinical.py` - implementation of Warfarin Clinical Dosing Algorithm
+- `baseline_tf.py` - attempt to improve Clinical Algorithm with tensorflow
 
 
 Links:
