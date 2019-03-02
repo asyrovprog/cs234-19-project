@@ -81,9 +81,7 @@ def load_dataset_clinical():
         label = mg_to_dose(row[TARGET])
         height = get_float_fld(row, HEIGHT)
         weight = get_float_fld(row, WEIGHT)
-
         if not -1 in [age, label, height, weight]:
-
             asian = get_race(row, "Asian")
             black = get_race(row, "Black or African American")
             missing = 1 if row[RACE].lower() in {"", "na", "unknown"} else 0
@@ -98,11 +96,17 @@ def load_dataset_clinical():
             amiodarone = 1 if "amiodarone" in meds \
                 or row["Amiodarone (Cordarone)"] == "1" else 0
 
-            result.append({ "label": label, "age":  age, "height" : height, "weight": weight, "race_asian": asian,
-                            "race_black": black, "race_missing": missing, "enzyme": enzyme, "amiodarone": amiodarone})
+            male = row["Gender"] == "male"
+            aspirin = 1 if "aspirin" in meds else 0
+            smoker = 1 if row["Current Smoker"] == "1" else 0
+
+            result.append({"label": label, "age":  age, "height" : height, "weight": weight, "race_asian": asian,
+                           "race_black": black, "race_missing": missing, "enzyme": enzyme, "amiodarone": amiodarone,
+                           # additional fields not used in clinical, but used in TF
+                           "male": male, "aspirin": aspirin, "smoker": smoker})
         else:
             missing_count += 1
 
     if missing_count > 0:
-        print("WARNING: ", missing_count, " records have missing data. They will not be processed." )
+        print("WARNING:", missing_count, "records have missing data. They will not be processed." )
     return result
