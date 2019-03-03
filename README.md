@@ -18,4 +18,5 @@ Links:
 
 TODOS:
 - [X] implement "Imputation of VKORC1 SNPs"
+- [] add better data preprocessing. Use one-hot encoding for categorical feature, etc.
 - [] implement linear bandit
