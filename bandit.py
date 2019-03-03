@@ -4,10 +4,20 @@ import numpy as np
 class ContextualBandit(object):
     """Base class for contextual bandit."""
     def update(self, arm, context_feature, reward):
+        """Observe the reward.
+
+        Observe the reward for a past action. Update parameters accordingly.
+
+        Args:
+            arm: the previous arm recommended by the bandit.
+            context_feature: the feature used to compute the previous recommend arm.
+            reward: the reward corresponding to the previous action.
+        """
         pass
 
     def recommend(self, context_feature):
-        """
+        """Recommend an action.
+
         Args:
             context_feature: a numpy array represents the input feature.
         Returns:
@@ -17,6 +27,7 @@ class ContextualBandit(object):
 
 
 class FixDose(ContextualBandit):
+    """Fix dose bandit."""
     def __init__(self, dose):
         self.dose = dose
 
