@@ -49,7 +49,7 @@ class LinUCB(ContextualBandit):
     def __init__(self, alpha, d, num_arms):
         """
         Args:
-            alpha: hyperparameter
+            alpha: regularization parameter.
             d: number of features
             num_arms: number of arms
         """
@@ -116,9 +116,11 @@ if __name__ == "__main__":
     fix_dose = FixDose(tools.DOSE_MED)
 
     lin_ucb = LinUCB(
-        alpha=0.5,
+        alpha=0.0,
         d=features.shape[1],
         num_arms=3
     )
-    print("Fix dose regret: ", evaluation.evaluate(features, labels, fix_dose, 10))
-    print("Lin UCB regret: ", evaluation.evaluate(features, labels, lin_ucb, 10))
+    regret, incorrect_frac = evaluation.evaluate(features, labels, fix_dose, 10)
+    print("Fix dose regret: ", regret, " incorrect frac: ", incorrect_frac)
+    regret, incorrect_frac = evaluation.evaluate(features, labels, lin_ucb, 10)
+    print("LinUCB regret: ", regret, " incorrect frac: ", incorrect_frac)
