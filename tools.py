@@ -100,8 +100,10 @@ def load_dataset_clinical(keep_missing_data=False):
     return result
 
 
-def load_dataset_bandit():
+def load_dataset_bandit(features_to_include=None):
     """Get data set used to evaluate bandit algorithm.
+    Args:
+        features_to_include: a list features to include in the output. If None, include all.
     Returns:
         feature matrix, label.
     """
@@ -120,9 +122,16 @@ def load_dataset_bandit():
 
     labels = data[TARGET].apply(_to_dose).values
 
+    numeric_features_to_include = set(NUMERICAL_FEATURES)
+    categorical_features_to_include = set(CATEGORICAL_FEATURES)
+
+    if features_to_include is not None:
+        numeric_features_to_include = numeric_features_to_include.intersection(set(features_to_include))
+        categorical_features_to_include = categorical_features_to_include.intersection(set(features_to_include))
+
     features = data.loc[:, data.columns != TARGET]
-    numeric_features = features[NUMERICAL_FEATURES]
-    categorical_features = features[CATEGORICAL_FEATURES]
+    numeric_features = features[numeric_features_to_include]
+    categorical_features = features[categorical_features_to_include]
     numeric_categorical_features = categorical_features.select_dtypes("float64")
     string_categorical_features = categorical_features.select_dtypes("object")
 
