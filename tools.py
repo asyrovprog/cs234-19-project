@@ -1,4 +1,5 @@
 import csv
+import pandas as pd
 
 # fields
 TARGET = "Therapeutic Dose of Warfarin"
@@ -72,7 +73,7 @@ def load_dataset_fixed_dose():
 #
 # For Baselines Clinical
 #
-def load_dataset_clinical():
+def load_dataset_clinical(keep_missing_data=False):
     rows = load_dataset()
     result = []
     missing_count = 0
@@ -81,7 +82,7 @@ def load_dataset_clinical():
         label = mg_to_dose(row[TARGET])
         height = get_float_fld(row, HEIGHT)
         weight = get_float_fld(row, WEIGHT)
-        if not -1 in [age, label, height, weight]:
+        if (not -1 in [age, label, height, weight]) or keep_missing_data:
             asian = get_race(row, "Asian")
             black = get_race(row, "Black or African American")
             missing = 1 if row[RACE].lower() in {"", "na", "unknown"} else 0
@@ -96,7 +97,7 @@ def load_dataset_clinical():
             amiodarone = 1 if "amiodarone" in meds \
                 or row["Amiodarone (Cordarone)"] == "1" else 0
 
-            male = row["Gender"] == "male"
+            male = 1 if row["Gender"] == "male" else 0
             aspirin = 1 if "aspirin" in meds else 0
             smoker = 1 if row["Current Smoker"] == "1" else 0
 
@@ -110,3 +111,17 @@ def load_dataset_clinical():
     if missing_count > 0:
         print("WARNING:", missing_count, "records have missing data. They will not be processed." )
     return result
+
+
+def load_dataset_bandit(keep_missing_data=False):
+    """Get data set used to evaluate bandit algorithm.
+
+    Args:
+        keep_missing_data: if true, missing values are kept.
+
+    Returns:
+        feature matrix, label.
+    """
+    # TODO: add one-hot encoding for categorical features.
+    data = pd.DataFrame(load_dataset_clinical(keep_missing_data))
+    return data.loc[:, data.columns != "label"].values, data["label"].values
