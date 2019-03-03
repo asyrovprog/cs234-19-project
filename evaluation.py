@@ -7,7 +7,7 @@ def get_reward(action, label):
     return 0 if action == label else -1
 
 
-def evaluate(features, labels, bandit, num_iter=1):
+def evaluate(features, labels, bandit, num_iter=1, verbose=False):
     indices = np.arange(len(labels))
     per_iter_regret = []
     per_iter_incorrect_frac = []

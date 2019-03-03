@@ -131,6 +131,8 @@ def load_dataset_bandit(features_to_include=None):
 
     features = data.loc[:, data.columns != TARGET]
     numeric_features = features[numeric_features_to_include]
+    # TODO: parse "medication" feature. Currently it is treated as simple
+    # categorical this is definitely incorrect.
     categorical_features = features[categorical_features_to_include]
     numeric_categorical_features = categorical_features.select_dtypes("float64")
     string_categorical_features = categorical_features.select_dtypes("object")
@@ -138,6 +140,7 @@ def load_dataset_bandit(features_to_include=None):
     # Impute missing value for numeric features.
     imp_mean = sklearn.impute.SimpleImputer(missing_values=np.nan, strategy="mean")
     numeric_features = imp_mean.fit_transform(numeric_features)
+    numeric_features = sklearn.preprocessing.scale(numeric_features)
 
     # Compute onehot encoding for categorical features.
     imp_constant = sklearn.impute.SimpleImputer(missing_values=np.nan, strategy="constant")
