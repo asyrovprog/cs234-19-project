@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from tools import *
+from v1.tools import *
 import random
 
 # Define the model we'll use

@@ -1,0 +1,5 @@
+numpy
+tensorflow==1.7.1
+scipy
+matplotlib
+pandas

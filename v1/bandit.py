@@ -109,7 +109,7 @@ class LinUCB(ContextualBandit):
 
 if __name__ == "__main__":
     import evaluation
-    import tools
+    from v1 import tools
 
     features, labels = tools.load_dataset_bandit()
 

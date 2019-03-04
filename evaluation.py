@@ -1,6 +1,5 @@
 # Utility function for evaluation.
 import numpy as np
-import tools
 
 
 def get_reward(action, label):
