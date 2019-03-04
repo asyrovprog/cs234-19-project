@@ -33,7 +33,6 @@ class LinUCBDisjointRecommender(Recommender):
         # action -> d
         self.theta = {}
         self.b = {}
-
         self.reset()
 
     def reset(self):
@@ -47,25 +46,19 @@ class LinUCBDisjointRecommender(Recommender):
 
     def recommend(self, context_feature):
         payoff = {}
-        for a in range(self.num_arms):
-            self.theta[a] = np.linalg.inv(self.A[a]) @ self.b[a]
-            payoff[a] = (np.transpose(self.theta[a]) @ context_feature +
-                self.alpha * np.sqrt(np.transpose(context_feature) @ np.linalg.inv(self.A[a]) @ context_feature))
-
         best_arm = None
         best_payoff = -float('inf')
-        for a, p in payoff.items():
-            if best_arm is None:
+        best_conf_interval = None
+
+        for a in range(self.num_arms):
+            self.theta[a] = np.linalg.inv(self.A[a]) @ self.b[a]
+            conf_interval = self.alpha * np.sqrt(np.transpose(context_feature) @ np.linalg.inv(self.A[a])
+                                                 @ context_feature)
+            payoff[a] = np.transpose(self.theta[a]) @ context_feature + conf_interval
+
+            if payoff[a] > best_payoff:
+                best_payoff = payoff[a]
                 best_arm = a
-                best_payoff = p
-            elif p > best_payoff:
-                best_arm = a
-                best_payoff = p
-                continue
-            elif p == best_payoff and np.random.random_sample() < 0.5:
-                # randomly break tie
-                best_arm = a
-                best_payoff = p
-                continue
-        return best_arm
+
+        return best_arm, best_payoff, best_conf_interval
 
