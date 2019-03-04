@@ -1,22 +1,9 @@
 import csv
 import pandas as pd
-
-# fields
-TARGET = "Therapeutic Dose of Warfarin"
-AGE="Age"
-HEIGHT="Height (cm)"
-WEIGHT="Weight (kg)"
-RACE="Race"
-MEDICATIONS = "Medications"
-CARBAMAZEPINE = "Carbamazepine (Tegretol)"
-
-DOSE_NA = -1
-DOSE_LOW = 0
-DOSE_MED = 1
-DOSE_HIGH = 2
-
-INCORRECT_DOSE_REWARD = -1
-CORRECT_DOSE_REWARD = 0
+from constant import *
+import sklearn.preprocessing
+import sklearn.impute
+import numpy as np
 
 def load_dataset():
     input_file = csv.DictReader(open("data/warfarin.csv"))
@@ -113,15 +100,55 @@ def load_dataset_clinical(keep_missing_data=False):
     return result
 
 
-def load_dataset_bandit(keep_missing_data=False):
+def load_dataset_bandit(features_to_include=None):
     """Get data set used to evaluate bandit algorithm.
-
     Args:
-        keep_missing_data: if true, missing values are kept.
-
+        features_to_include: a list features to include in the output. If None, include all.
     Returns:
         feature matrix, label.
     """
-    # TODO: add one-hot encoding for categorical features.
-    data = pd.DataFrame(load_dataset_clinical(keep_missing_data))
-    return data.loc[:, data.columns != "label"].values, data["label"].values
+    data = pd.read_csv("data/warfarin_imputed_missing.csv")
+
+    # Drop row without label.
+    data = data[data[TARGET].notna()]
+
+    # Convert to discrete label.
+    def _to_dose(d):
+        if d < 21:
+            return DOSE_LOW
+        if d < 49:
+            return DOSE_MED
+        return DOSE_HIGH
+
+    labels = data[TARGET].apply(_to_dose).values
+
+    numeric_features_to_include = set(NUMERICAL_FEATURES)
+    categorical_features_to_include = set(CATEGORICAL_FEATURES)
+
+    if features_to_include is not None:
+        numeric_features_to_include = numeric_features_to_include.intersection(set(features_to_include))
+        categorical_features_to_include = categorical_features_to_include.intersection(set(features_to_include))
+
+    features = data.loc[:, data.columns != TARGET]
+    numeric_features = features[numeric_features_to_include]
+    # TODO: parse "medication" feature. Currently it is treated as simple
+    # categorical this is definitely incorrect.
+    categorical_features = features[categorical_features_to_include]
+    numeric_categorical_features = categorical_features.select_dtypes("float64")
+    string_categorical_features = categorical_features.select_dtypes("object")
+
+    # Impute missing value for numeric features.
+    imp_mean = sklearn.impute.SimpleImputer(missing_values=np.nan, strategy="mean")
+    numeric_features = imp_mean.fit_transform(numeric_features)
+    numeric_features = sklearn.preprocessing.scale(numeric_features)
+
+    # Compute onehot encoding for categorical features.
+    imp_constant = sklearn.impute.SimpleImputer(missing_values=np.nan, strategy="constant")
+    numeric_categorical_features = imp_constant.fit_transform(numeric_categorical_features)
+    string_categorical_features = imp_constant.fit_transform(string_categorical_features)
+
+    onehot = sklearn.preprocessing.OneHotEncoder(sparse=False)
+    numeric_categorical_features = onehot.fit_transform(numeric_categorical_features)
+    string_categorical_features = onehot.fit_transform(string_categorical_features)
+
+    return np.hstack((numeric_features, numeric_categorical_features, string_categorical_features)), labels

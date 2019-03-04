@@ -25,6 +25,10 @@ class ContextualBandit(object):
         """
         pass
 
+    def reset(self):
+        """Resets parameters."""
+        pass
+
 
 class FixDose(ContextualBandit):
     """Fix dose bandit."""
@@ -63,16 +67,14 @@ class LinUCB(ContextualBandit):
         # action -> d * d.
         self.A = {}
 
-        # History reward
-        # action -> num_observation
-        self.c = {}
-
         # Learned params
         # action -> d
         self.theta = {}
         self.b = {}
 
-        # Initialization
+        self.reset()
+
+    def reset(self):
         for a in range(self.num_arms):
             self.A[a] = np.identity(self.d)
             self.b[a] = np.zeros(self.d)
@@ -85,7 +87,7 @@ class LinUCB(ContextualBandit):
         payoff = {}
         for a in range(self.num_arms):
             self.theta[a] = np.linalg.inv(self.A[a]) @ self.b[a]
-            payoff[a] = (np.transpose(context_feature) @ self.theta[a] + 
+            payoff[a] = (np.transpose(self.theta[a]) @ context_feature +
                 self.alpha * np.sqrt(np.transpose(context_feature) @ np.linalg.inv(self.A[a]) @ context_feature))
 
         best_arm = None
@@ -94,12 +96,11 @@ class LinUCB(ContextualBandit):
             if best_arm is None:
                 best_arm = a
                 best_payoff = p
-                continue
-            if p > best_payoff:
+            elif p > best_payoff:
                 best_arm = a
                 best_payoff = p
                 continue
-            if p == best_payoff and np.random.random() < 0.5:
+            elif p == best_payoff and np.random.random_sample() < 0.5:
                 # randomly break tie
                 best_arm = a
                 best_payoff = p
@@ -110,17 +111,33 @@ class LinUCB(ContextualBandit):
 if __name__ == "__main__":
     import evaluation
     import tools
+    import pandas as pd
 
-    features, labels = tools.load_dataset_bandit()
+    # features, labels = tools.load_dataset_bandit(features_to_include=[
+    #     "Height (cm)",
+    #     "Weight (kg)",
+    #     "Gender",
+    #     "Race",
+    #     "Ethnicity",
+    #     "Age",
+    #     "Rifampin or Rifampicin",
+    #     "Carbamazepine (Tegretol)",
+    #     "Phenytoin (Dilantin)",
+    #     "Amiodarone (Cordarone)"
+    # ])
+
+    data = pd.DataFrame(tools.load_dataset_clinical())
+    labels = data["label"].values
+    features = data.loc[:,data.columns != "label"].values
 
     fix_dose = FixDose(tools.DOSE_MED)
 
     lin_ucb = LinUCB(
-        alpha=0.0,
+        alpha=1.0,
         d=features.shape[1],
         num_arms=3
     )
     regret, incorrect_frac = evaluation.evaluate(features, labels, fix_dose, 10)
     print("Fix dose regret: ", regret, " incorrect frac: ", incorrect_frac)
-    regret, incorrect_frac = evaluation.evaluate(features, labels, lin_ucb, 10)
+    regret, incorrect_frac = evaluation.evaluate(features, labels, lin_ucb, 10, verbose=True)
     print("LinUCB regret: ", regret, " incorrect frac: ", incorrect_frac)
