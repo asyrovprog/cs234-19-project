@@ -16,6 +16,9 @@
   2. [Project Page](http://web.stanford.edu/class/cs234/project.html)
   3. [Default Project Page](http://web.stanford.edu/class/cs234/default_project/index.html)
 
+## References:
+  1. [A Contextual-Bandit Approach to Personalized News Article Recommendation] (https://arxiv.org/abs/1003.0146)
+
 ## TODOS:
 - [X] implement "Imputation of VKORC1 SNPs"
 - [ ] add better data preprocessing. Use one-hot encoding for categorical feature, etc.
