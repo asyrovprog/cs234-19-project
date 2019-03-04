@@ -39,7 +39,3 @@ if __name__ == '__main__':
 
     regret, incorrect_frac = evaluation.evaluate(features, labels, model, 10)
     print(f"[{model.config.algo_name}] regret={regret}; incorrect fraction={incorrect_frac}")
-
-    # total_regret, correct_predictions, total_predictions = model.run(raw_data)
-    #
-    # print(f"results: accuracy={correct_predictions/total_predictions}, regret={total_regret}")

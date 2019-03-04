@@ -29,16 +29,14 @@ class LinUCBDisjointRecommender(Recommender):
         # action -> d * d.
         self.A = {}
 
-        # History reward
-        # action -> num_observation
-        self.c = {}
-
         # Learned params
         # action -> d
         self.theta = {}
         self.b = {}
 
-        # Initialization
+        self.reset()
+
+    def reset(self):
         for a in range(self.num_arms):
             self.A[a] = np.identity(self.d)
             self.b[a] = np.zeros(self.d)
@@ -51,7 +49,7 @@ class LinUCBDisjointRecommender(Recommender):
         payoff = {}
         for a in range(self.num_arms):
             self.theta[a] = np.linalg.inv(self.A[a]) @ self.b[a]
-            payoff[a] = (np.transpose(context_feature) @ self.theta[a] +
+            payoff[a] = (np.transpose(self.theta[a]) @ context_feature +
                 self.alpha * np.sqrt(np.transpose(context_feature) @ np.linalg.inv(self.A[a]) @ context_feature))
 
         best_arm = None
@@ -60,12 +58,11 @@ class LinUCBDisjointRecommender(Recommender):
             if best_arm is None:
                 best_arm = a
                 best_payoff = p
-                continue
-            if p > best_payoff:
+            elif p > best_payoff:
                 best_arm = a
                 best_payoff = p
                 continue
-            if p == best_payoff and np.random.random() < 0.5:
+            elif p == best_payoff and np.random.random_sample() < 0.5:
                 # randomly break tie
                 best_arm = a
                 best_payoff = p
