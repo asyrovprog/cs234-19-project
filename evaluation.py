@@ -6,17 +6,19 @@ def get_reward(action, label):
     return 0 if action == label else -1
 
 
-def evaluate(features, labels, bandit, num_iter=1):
+def evaluate(features, labels, bandit, num_iter=1, verbose=False):
     indices = np.arange(len(labels))
     per_iter_regret = []
     per_iter_incorrect_frac = []
-    for i in range(num_iter):
+    for iter in range(num_iter):
+        bandit.reset()
+
         np.random.shuffle(indices)
         regrets = []
         incorrects = []
-        for i in indices:
-            feature = features[i]
-            label = labels[i]
+        for index in indices:
+            feature = features[index]
+            label = labels[index]
 
             arm = bandit.recommend(feature)
             reward = get_reward(arm, label)
@@ -24,6 +26,9 @@ def evaluate(features, labels, bandit, num_iter=1):
 
             regrets.append(get_reward(label, label) - reward)
             incorrects.append(0 if arm == label else 1)
+
+        if verbose:
+            print("Iteration", iter, "regret:", np.mean(regrets))
 
         per_iter_regret.append(np.mean(regrets))
         per_iter_incorrect_frac.append(np.mean(incorrects))

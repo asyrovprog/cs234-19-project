@@ -56,3 +56,4 @@ $ python warfarin.py --algo=linucb_disjoint
 - [ ] add model eval logging.
 - [ ] implement linear bandit
 - [ ] discuss if we need multiple action update in LinUCB
+
