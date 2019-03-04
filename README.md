@@ -3,13 +3,44 @@
 ## Files:
 
 - `/data` - contains provided warfarin.csv dataset and support files
-- `tools.py` - utilities to load and preprocess warfarin dataset
-- `baseline_fixed_dose.py` - implementation of fixed dose algorithm
-- `baseline_clinical.py` - implementation of Warfarin Clinical Dosing Algorithm
-- `baseline_tf.py` - attempt to improve over Clinical Algorithm with tensorflow (this is not required for project)
-- `bandit.py` - implementation of bandits.
-- `evaluation.py` - utilities for evaluting bandits.
-- `lin_ucb.py` - (temporary file) implementation of lin ucb with multiple action update
+    - **warfarin.csv**: original dataset with 5700 patient records
+    - **warfarin_5528.csv**: removed 172 patients records with 'NA' in "Therapeutic Dose of Warfarin" column 
+    - **warfarin_5528_imputed.csv**: imputed missing values in warfarin_5528.csv by running `impute_missing.py`
+    - **warfarin_imputed_missing.csv**: imputed missing values in warfarin.csv by running `impute_missing.py`
+- `logs` - where log files are located
+- `results` - where run results and plots are stored per model
+- `v1` - initial implementations
+- `warfarin.py` - the `main` program to run Warfarin dosage recommendations
+- `recommender.py` - abstract `Recommender` class to represent a recommendation model
+- `fixed_dose.py` - subclass of `Recommender` with implementation of fixed dose algorithm
+- `clinical_dose.py` - subclass of `Recommender` with implementation of Warfarin Clinical Dosing Algorithm
+- `lin_ucb.py` - subclass of `Recommender` with implementation of LinUCB algorithms (disjoint & hybrid).
+- `evaluation.py` - utilities for evaluting algorithms.
+- `config.py` - configuration classes for algorithms.
+- `constant.py` - define constants.
+- `impute_missing.py` - standalone script to impute missing data in the source CSV
+- `util.py` - utilities to load and preprocess warfarin dataset
+- `requirements.txt` - for installing required libraries
+
+## Usage:
+### Impute missing data:
+* Impute missing data in `data/warfarin_5528.csv` and create new file `data/warfarin_5528_imputed.csv`:
+```
+$ python impute_missing.py --in_file="warfarin_5528.csv" --out_file="warfarin_5528_imputed.csv"
+```
+### Run a recommender:
+* Fixed Dose recommendation (baseline 1):
+```
+$ python warfarin.py --algo=fixed_dose
+```
+* Warfarin Clinical Dosing Algorithm recommendation (baseline 2):
+```
+$ python warfarin.py --algo=clinical_dose
+```
+* LinUCB Disjoint recommendation:
+```
+$ python warfarin.py --algo=linucb_disjoint
+```
 
 ## Links:
   1. [Schedule](https://docs.google.com/document/d/1vIYf-HFQKeuH0-SNvdXx2ylfTErejZMM8p4-wouhuYw/edit?ts=5c69e320)
@@ -25,3 +56,4 @@
 - [ ] add model eval logging.
 - [ ] implement linear bandit
 - [ ] discuss if we need multiple action update in LinUCB
+

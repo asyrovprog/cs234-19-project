@@ -1,56 +1,64 @@
 import numpy as np
-from tools import *
-import random
-
-def init_vars(num_features, num_arms):
-    A = np.array([np.eye(num_features).tolist()] * num_arms)
-    b = np.zeros((num_arms, num_features, 1))
-    theta = np.zeros((num_arms, num_features, 1))
-    p = np.zeros(num_arms)
-    return A, b, theta, p
-
-def lin_ucb(dataset, num_arms, correct_reward, incorrect_reward):
-    feature_size, correct, i = dataset.shape[1] - 1, 0, 0
-    A, b, theta, p = init_vars(feature_size, num_arms)
-
-    for row in dataset:
-        arm = int(row[0])
-        x_t = np.expand_dims(row[1:], axis=1)
-
-        # alpha = 0
-        # alpha = 0.05 / np.sqrt(i + 1)
-        alpha = 0.1 / (i + 1)
-
-        for a in range(0, num_arms):
-            A_inv = np.linalg.inv(A[a])
-            theta[a] = np.matmul(A_inv, b[a])
-            p[a] = np.matmul(theta[a].T, x_t) + alpha * np.sqrt(np.matmul(np.matmul(x_t.T, A_inv), x_t))
-
-        correct += 1 if np.argmax(p) == arm else 0
-        i += 1
-
-        for a in range(num_arms):
-            reward = correct_reward if a == arm else incorrect_reward
-            A[a] = A[a] + np.matmul(x_t, x_t.T)
-            b[a] = b[a] + reward * x_t
-
-    accuracy = float(correct) / len(dataset)
-    print("Accuracy: ", float(correct) / len(dataset))
-    return accuracy
+from recommender import *
 
 
-if __name__ == "__main__":
-    data = load_dataset_clinical()
-    darr = []
-    for row in data:
-        r = [row["label"], row["age"],row["height"], row["weight"], row["weight"], row["race_asian"], row["race_black"], row["race_missing"], row["enzyme"], row["amiodarone"], row["male"], row["aspirin"], row["smoker"] ]
-        darr.append(r)
-    darr = np.array(darr)
+class LinUCBDisjointRecommender(Recommender):
+    """
+    Linear UCB with disjoint models.
+    Blog post: http://john-maxwell.com/post/2017-03-17/
+    Reference: Li, Lihong, Wei Chu, John Langford, and Robert E Schapire. 2010.
+    “A Contextual-Bandit Approach to Personalized News Article Recommendation.”
+    In Proceedings of the 19th International Conference on World Wide Web,
+    661–70. ACM.
+    """
+    def __init__(self, config, d):
+        """
+        Args:
+            alpha: regularization parameter.
+            d: number of features
+            num_arms: number of arms
+        """
+        super().__init__(config)
+        self.alpha = self.config.alpha
+        self.d = d
+        self.num_arms = len(self.config.actions)
 
-    iters, res = 20, 0
-    for i in range(iters):
-        arr = np.array(darr)
-        random.shuffle(arr)
-        res += lin_ucb(arr, 3, CORRECT_DOSE_REWARD, INCORRECT_DOSE_REWARD)
-    print("Average accuracy: ", res / iters)
+        # Convenience variable.
+        # A = D^T * D + I
+        # where D is the num_observation * d design matrix
+        # action -> d * d.
+        self.A = {}
+
+        # Learned params
+        # action -> d
+        self.theta = {}
+        self.b = {}
+        self.reset()
+
+    def reset(self):
+        for a in range(self.num_arms):
+            self.A[a] = np.identity(self.d)
+            self.b[a] = np.zeros(self.d)
+
+    def update(self, arm, context_feature, reward):
+        self.A[arm] += context_feature @ np.transpose(context_feature)
+        self.b[arm] += reward * context_feature
+
+    def recommend(self, context_feature):
+        payoff = {}
+        best_arm = None
+        best_payoff = -float('inf')
+        best_conf_interval = None
+
+        for a in range(self.num_arms):
+            self.theta[a] = np.linalg.inv(self.A[a]) @ self.b[a]
+            conf_interval = self.alpha * np.sqrt(np.transpose(context_feature) @ np.linalg.inv(self.A[a])
+                                                 @ context_feature)
+            payoff[a] = np.transpose(self.theta[a]) @ context_feature + conf_interval
+
+            if payoff[a] > best_payoff:
+                best_payoff = payoff[a]
+                best_arm = a
+
+        return best_arm, best_payoff, best_conf_interval
 

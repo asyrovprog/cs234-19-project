@@ -1,10 +1,10 @@
 # Utility function for evaluation.
 import numpy as np
-import tools
+from constant import *
 
 
 def get_reward(action, label):
-    return 0 if action == label else -1
+    return CORRECT_DOSE_REWARD if action == label else INCORRECT_DOSE_REWARD
 
 
 def evaluate(features, labels, bandit, num_iter=1, verbose=False):
@@ -21,7 +21,9 @@ def evaluate(features, labels, bandit, num_iter=1, verbose=False):
             feature = features[index]
             label = labels[index]
 
-            arm = bandit.recommend(feature)
+            # TODO: log estimated payoff & its confidence interval
+            # TODO: plot estimated payoff & its confidence interval
+            arm, payoff, conf_interval = bandit.recommend(feature)
             reward = get_reward(arm, label)
             bandit.update(arm, feature, reward)
 

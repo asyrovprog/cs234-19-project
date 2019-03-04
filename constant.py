@@ -81,3 +81,4 @@ CATEGORICAL_FEATURES = [
     "VKORC1 2255 consensus",
     "VKORC1 -4451 consensus",
 ]
+
