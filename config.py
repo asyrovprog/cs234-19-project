@@ -1,4 +1,4 @@
-from constant import  *
+from constant import *
 
 
 class ConfigFixedDose:
@@ -9,7 +9,9 @@ class ConfigFixedDose:
         # output config
         self.output_path = "results/{}/".format(self.algo_name)
         self.log_path = self.output_path + "log.txt"
-        self.plot_output = self.output_path + "scores.png"
+        self.regret_plot_output = self.output_path + "regret.png"
+        self.payoff_plot_output = None
+        self.cfinterval_plot_output = None
 
         # parameters for the model
         self.fixed_dose = DOSE_MED
@@ -23,7 +25,9 @@ class ConfigClinicalDose:
         # output config
         self.output_path = "results/{}/".format(self.algo_name)
         self.log_path = self.output_path + "log.txt"
-        self.plot_output = self.output_path + "scores.png"
+        self.regret_plot_output = self.output_path + "regret.png"
+        self.payoff_plot_output = None
+        self.cfinterval_plot_output = None
 
 
 class ConfigLinUCBDisjoint:
@@ -34,7 +38,9 @@ class ConfigLinUCBDisjoint:
         # output config
         self.output_path = "results/{}/".format(self.algo_name)
         self.log_path = self.output_path + "log.txt"
-        self.plot_output = self.output_path + "scores.png"
+        self.regret_plot_output = self.output_path + "regret.png"
+        self.payoff_plot_output = self.output_path + "payoff.png"
+        self.cfinterval_plot_output = self.output_path + "cfinterval.png"
 
         # model and training config
 

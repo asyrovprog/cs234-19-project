@@ -1,2 +1,9 @@
 *.pyc
 .idea/
+results/
+logs/
+.env/
+.ipynb_checkpoints/
+test.py
+test.ipynb
+
