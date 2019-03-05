@@ -24,6 +24,12 @@ class Recommender(object):
         if logger is None:
           self.logger = get_logger(config.log_path)
 
+    def reset(self):
+        """
+        Reset params.
+        """
+        pass
+
     def update(self, arm, context_feature, reward):
         """Observe the reward.
 
