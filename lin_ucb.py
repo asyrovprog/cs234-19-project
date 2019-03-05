@@ -41,8 +41,8 @@ class LinUCBDisjointRecommender(Recommender):
             self.b[a] = np.zeros(self.d)
 
     def update(self, arm, context_feature, reward):
-        self.A[arm] += context_feature @ np.transpose(context_feature)
-        self.b[arm] += reward * context_feature
+        self.A[arm] += context_feature @ context_feature.T
+        self.b[arm] += (reward * context_feature)
 
     def recommend(self, context_feature):
         payoff = {}
@@ -52,9 +52,9 @@ class LinUCBDisjointRecommender(Recommender):
 
         for a in range(self.num_arms):
             self.theta[a] = np.linalg.inv(self.A[a]) @ self.b[a]
-            conf_interval = self.alpha * np.sqrt(np.transpose(context_feature) @ np.linalg.inv(self.A[a])
+            conf_interval = self.alpha * np.sqrt(context_feature.T @ np.linalg.inv(self.A[a])
                                                  @ context_feature)
-            payoff[a] = np.transpose(self.theta[a]) @ context_feature + conf_interval
+            payoff[a] = (self.theta[a].T @ context_feature) + conf_interval
 
             if payoff[a] > best_payoff:
                 best_payoff = payoff[a]

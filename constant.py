@@ -7,7 +7,7 @@ RACE="Race"
 MEDICATIONS = "Medications"
 CARBAMAZEPINE = "Carbamazepine (Tegretol)"
 
-DOSE_NA = -1
+VAL_UNKNOWN = -1
 DOSE_LOW = 0
 DOSE_MED = 1
 DOSE_HIGH = 2

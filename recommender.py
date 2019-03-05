@@ -56,3 +56,8 @@ class Recommender(object):
         pass
 
 
+    def reset(self):
+        """
+        Reset model internal states.
+        """
+        pass
