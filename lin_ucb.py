@@ -36,11 +36,13 @@ class LinUCBDisjointRecommender(Recommender):
         self.reset()
 
     def reset(self):
+        self.logger.debug(f"[{self.config.algo_name}] reset!")
         for a in range(self.num_arms):
             self.A[a] = np.identity(self.d)
             self.b[a] = np.zeros(self.d)
 
     def update(self, arm, context_feature, reward):
+        self.logger.debug(f"[{self.config.algo_name}] update: action={arm}; reward={reward}; context={context_feature}")
         self.A[arm] += context_feature @ context_feature.T
         self.b[arm] += (reward * context_feature)
 
@@ -59,6 +61,10 @@ class LinUCBDisjointRecommender(Recommender):
             if payoff[a] > best_payoff:
                 best_payoff = payoff[a]
                 best_arm = a
+                best_conf_interval = conf_interval
+
+        self.logger.debug(f"[{self.config.algo_name}] recommend: chosen action={best_arm}; "
+                          f"estimated payoff={best_payoff}; conf interval={best_conf_interval}")
 
         return best_arm, best_payoff, best_conf_interval
 
