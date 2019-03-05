@@ -7,12 +7,12 @@ def get_reward(action, label):
     return CORRECT_DOSE_REWARD if action == label else INCORRECT_DOSE_REWARD
 
 
-def evaluate(features, labels, bandit, num_iter=1, verbose=False):
+def evaluate(features, labels, model, num_iter=1, verbose=False):
     indices = np.arange(len(labels))
     per_iter_regret = []
     per_iter_incorrect_frac = []
     for iter in range(num_iter):
-        bandit.reset()
+        model.reset()
 
         np.random.shuffle(indices)
         regrets = []
@@ -23,9 +23,9 @@ def evaluate(features, labels, bandit, num_iter=1, verbose=False):
 
             # TODO: log estimated payoff & its confidence interval
             # TODO: plot estimated payoff & its confidence interval
-            arm, payoff, conf_interval = bandit.recommend(feature)
+            arm, payoff, conf_interval = model.recommend(feature)
             reward = get_reward(arm, label)
-            bandit.update(arm, feature, reward)
+            model.update(arm, feature, reward)
 
             regrets.append(get_reward(label, label) - reward)
             incorrects.append(0 if arm == label else 1)

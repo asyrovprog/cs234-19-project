@@ -28,7 +28,7 @@ class ClinicalDoseRecommender(Recommender):
                      + 0.4060 * features[4] \
                      + 0.0443 * features[5] \
                      + 1.2799 * features[6] \
-                     - 0.5695 * features[8]
+                     - 0.5695 * features[7]
 
         return mg_to_dose(math.pow(prediction, 2)), None, None
 
