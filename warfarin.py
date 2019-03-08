@@ -28,8 +28,6 @@ def get_recommender(algo):
 
 
 def load_data():
-    # raw_data = csv.DictReader(open("data/warfarin_5528_imputed.csv"))
-    # return util.process_data(raw_data, keep_missing_data=False)
     raw_data = csv.DictReader(open("data/warfarin_5528.csv"))
     return parse_all_records(raw_data)
 
@@ -38,7 +36,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     patients = load_data()
-    model = get_recommender(args.algo, patients)
+    model = get_recommender(args.algo)
 
     regret, incorrect_frac = evaluation.evaluate(features, labels, model, 10)
     print(f"[{model.config.algo_name}] regret={regret}; incorrect fraction={incorrect_frac}")

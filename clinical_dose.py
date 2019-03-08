@@ -2,6 +2,7 @@ import math
 import numpy as np
 from util import *
 from recommender import *
+from feature import *
 
 
 class ClinicalDoseRecommender(Recommender):
@@ -13,7 +14,23 @@ class ClinicalDoseRecommender(Recommender):
         :param patient: patient data
         :return: feature vector for the given patient
         """
-        features = [1, patient.properties[AGE]]
+        enzyme = 1 if patient.properties[TEGRETOL] is BinaryFeature.true or \
+                      patient.properties[DILANTIN] is BinaryFeature.true or \
+                      patient.properties[RIFAMPIN] is BinaryFeature.true or \
+                      any(x in patient.properties[MEDICATIONS] for m in ["carbamazepine", "phenytoin", "rifampin",
+                                                                         "rifampicin"]) \
+                else 0
+
+        amiodarone = 1 if patient.properties[CORDARONE] is BinaryFeature.true or \
+                         "amiodarone" in patient.properties[MEDICATIONS] \
+                    else 0
+
+        features = [1, patient.properties[AGE].value, patient.properties[HEIGHT], patient.properties[WEIGHT],
+                    1 if patient.properties[RACE] is Race.asian else 0,
+                    1 if patient.properties[RACE] is Race.black else 0,
+                    1 if patient.properties[RACE] is Race.unknown else 0,
+                    enzyme, amiodarone]
+
         return features
 
     def recommend(self, patient):

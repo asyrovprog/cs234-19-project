@@ -1,5 +1,7 @@
 import numpy as np
 from recommender import *
+from feature import *
+from constant import *
 
 
 class LinUCBDisjointRecommender(Recommender):
@@ -20,7 +22,7 @@ class LinUCBDisjointRecommender(Recommender):
         """
         super().__init__(config)
         self.alpha = self.config.alpha
-        self.d = d
+        self.d = self.config.feature_count
         self.num_arms = len(self.config.actions)
 
         # Convenience variable.
@@ -40,6 +42,32 @@ class LinUCBDisjointRecommender(Recommender):
         for a in range(self.num_arms):
             self.A[a] = np.identity(self.d)
             self.b[a] = np.zeros(self.d)
+
+    def get_features(self, patient):
+        """
+        Algorithm-specific feature processing
+
+        :param patient: patient data
+        :return: feature vector for the given patient
+        """
+        enzyme = 1 if patient.properties[TEGRETOL] is BinaryFeature.true or \
+                      patient.properties[DILANTIN] is BinaryFeature.true or \
+                      patient.properties[RIFAMPIN] is BinaryFeature.true or \
+                      any(x in patient.properties[MEDICATIONS] for m in ["carbamazepine", "phenytoin", "rifampin",
+                                                                         "rifampicin"]) \
+                else 0
+
+        amiodarone = 1 if patient.properties[CORDARONE] is BinaryFeature.true or \
+                          "amiodarone" in patient.properties[MEDICATIONS] \
+                    else 0
+
+        features = [1, patient.properties[AGE].value, patient.properties[HEIGHT], patient.properties[WEIGHT],
+                    1 if patient.properties[RACE] is Race.asian else 0,
+                    1 if patient.properties[RACE] is Race.black else 0,
+                    1 if patient.properties[RACE] is Race.unknown else 0,
+                    enzyme, amiodarone]
+
+        return features
 
     def update(self, arm, context_feature, reward):
         self.logger.debug(f"[{self.config.algo_name}] update: action={arm}; reward={reward}; context={context_feature}")

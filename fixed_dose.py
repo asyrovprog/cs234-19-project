@@ -9,8 +9,7 @@ class FixedDoseRecommender(Recommender):
 
         returns:
             action: An integer representing the selected action.
-            payoff: A float representing the estimated payoff of the selected action.
-            conf_interval: A float representing the confidence interval for the estimated payoff
-                            of the selected action.
+            payoff: None
+            conf_interval: None
         """
         return self.config.fixed_dose, None, None
