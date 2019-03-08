@@ -24,14 +24,14 @@ class Recommender(object):
         if logger is None:
           self.logger = get_logger(config.log_path)
 
-    def process_features(self, in_data):
+    def get_features(self, patient):
         """
-        Algorithm-spcific feature processing
+        Algorithm-specific feature processing
 
-        :param raw_data: raw input data
-        :return: set of features ready to be fed into the model
+        :param patient: patient data
+        :return: feature vector for the given patient
         """
-        return in_data
+        pass
 
     def reset(self):
         """

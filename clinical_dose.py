@@ -3,6 +3,7 @@ import numpy as np
 from util import *
 from recommender import *
 from feature import *
+from preprocess import *
 
 
 class ClinicalDoseRecommender(Recommender):
@@ -17,7 +18,7 @@ class ClinicalDoseRecommender(Recommender):
         enzyme = 1 if patient.properties[TEGRETOL] is BinaryFeature.true or \
                       patient.properties[DILANTIN] is BinaryFeature.true or \
                       patient.properties[RIFAMPIN] is BinaryFeature.true or \
-                      any(x in patient.properties[MEDICATIONS] for m in ["carbamazepine", "phenytoin", "rifampin",
+                      any(m in patient.properties[MEDICATIONS] for m in ["carbamazepine", "phenytoin", "rifampin",
                                                                          "rifampicin"]) \
                 else 0
 
@@ -31,7 +32,7 @@ class ClinicalDoseRecommender(Recommender):
                     1 if patient.properties[RACE] is Race.unknown else 0,
                     enzyme, amiodarone]
 
-        return features
+        return np.array(features)
 
     def recommend(self, patient):
         """
@@ -43,11 +44,11 @@ class ClinicalDoseRecommender(Recommender):
             payoff: None
             conf_interval: None
         """
-        weights = [4.0376, -0.2546, 0.0118, 0.0134, -0.6752, 0.4060, 0.0443, 1.2799, -0.5695]
+        weights = np.array([4.0376, -0.2546, 0.0118, 0.0134, -0.6752, 0.4060, 0.0443, 1.2799, -0.5695])
 
         features = self.get_features(patient)
 
         dose = np.dot(weights, features)
 
-        return mg_to_dose(math.pow(dose, 2)), None, None
+        return parse_dose(math.pow(dose, 2)), None, None
 

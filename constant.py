@@ -49,7 +49,7 @@ VKORC1_1173 = "VKORC1 1173 consensus"
 VKORC1_1542 = "VKORC1 1542 consensus"
 VKORC1_3730 = "VKORC1 3730 consensus"
 VKORC1_2255 = "VKORC1 2255 consensus"
-VKORC1_4451 = "VKORC1 -4451 consensus "
+VKORC1_4451 = "VKORC1 -4451 consensus"
 
 
 VAL_UNKNOWN = -1

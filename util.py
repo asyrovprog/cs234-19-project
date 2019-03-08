@@ -10,106 +10,134 @@ from constant import *
 def undefined(s):
     if isinstance(s, str):
         s = s.strip()
-    return s == "NA" or s == ""
+    return s is None or s == "NA" or s == ""
 
 
 def clean_value(s):
     result = s
-    if isinstance(s, str):
+    if undefined(s):
+        result = None
+    elif isinstance(s, str):
         result = s.strip().lower()
-        if result == "":
-            result = None
     return result
 
 
-def mg_to_dose(d):
+# def mg_to_dose(d):
+#
+#     """
+#     convert dose (string) to na/low/med/high integers
+#         0: < 21 mg/week  (LOW)
+#         1: <= 49 mg/week  (MEDIUM)
+#         2: else mg/week  (HIGH)
+#     """
+#     result = VAL_UNKNOWN
+#     if undefined(d):
+#         result = VAL_UNKNOWN
+#     if isinstance(d, str):
+#         d = d.strip()
+#         try:
+#             d = float(d)
+#         except ValueError:
+#             result = VAL_UNKNOWN
+#
+#     if result != VAL_UNKNOWN:
+#         if d < 21:
+#             result = DOSE_LOW
+#         elif d <= 49:
+#             result = DOSE_MED
+#         else:
+#             result = DOSE_HIGH
+#
+#     return result
 
-    """
-    convert dose (string) to na/low/med/high integers
-        0: < 21 mg/week  (LOW)
-        1: <= 49 mg/week  (MEDIUM)
-        2: else mg/week  (HIGH)
-    """
-    if undefined(d):
-        return VAL_UNKNOWN
-    if isinstance(d, str):
-        d = d.strip()
-    d = float(d)
-    if d < 21:
-        return DOSE_LOW
-    return DOSE_MED if d <= 49 else DOSE_HIGH
 
-
-def get_age_decades(s):
-    match = re.match(r'^\s*(\d+)\s*[-+].*', s.strip())
-    if match:
-        try:
-            age = int(match.group(1))
-            age = age // 10
-        except ValueError:
-            age = VAL_UNKNOWN
-        return age
-    else:
-        return VAL_UNKNOWN
+# def get_age_decades(s):
+#     match = re.match(r'^\s*(\d+)\s*[-+].*', s.strip())
+#     if match:
+#         try:
+#             age = int(match.group(1))
+#             age = age // 10
+#         except ValueError:
+#             age = VAL_UNKNOWN
+#         return age
+#     else:
+#         return VAL_UNKNOWN
 
 
 def get_float(s):
-    if undefined(s):
-        return VAL_UNKNOWN
-    try:
-        value = float(s.strip())
-    except ValueError:
+    value = clean_value(s)
+
+    if value is not None:
+        try:
+            value = float(s)
+        except ValueError:
+            value = VAL_UNKNOWN
+    else:
         value = VAL_UNKNOWN
 
     return value
 
 
-def get_race(s, expected):
-    return 1 if s.strip().lower() == expected.lower() else 0
+def get_int(s):
+    value = clean_value(s)
+
+    if value is not None:
+        try:
+            value = int(s)
+        except ValueError:
+            value = VAL_UNKNOWN
+    else:
+        value = VAL_UNKNOWN
+
+    return value
 
 
-def process_data(raw_data, keep_missing_data=False):
-    features = []
-    labels = []
-    missing_count = 0
-    for row in raw_data:
-        age = get_age_decades(row[AGE])
-        label = mg_to_dose(row[DOSE])
-        height = get_float(row[HEIGHT])
-        weight = get_float(row[WEIGHT])
-        if (not VAL_UNKNOWN in [age, label, height, weight]) or keep_missing_data:
-            asian = get_race(row[RACE], "Asian")
-            black = get_race(row[RACE], "Black or African American")
-            missing = 1 if row[RACE].lower() in {"", "na", "unknown"} else 0
-
-            meds = {m.strip(" ").lower() for m in row[MEDICATIONS].split(";")}
-
-            enzyme = 1 if {"carbamazepine", "phenytoin", "rifampin", "rifampicin"} & meds \
-                          or row["Rifampin or Rifampicin"] == "1" \
-                          or row["Carbamazepine (Tegretol)"] == "1" \
-                          or row["Phenytoin (Dilantin)"] == "1" else 0
-
-            amiodarone = 1 if "amiodarone" in meds \
-                              or row["Amiodarone (Cordarone)"] == "1" else 0
-
-            male = 1 if row["Gender"].strip().lower() == "male" else 0
-            aspirin = 1 if "aspirin" in meds else 0
-            smoker = 1 if row["Current Smoker"] == "1" else 0
-
-            features.append([age, height, weight, asian, black, missing, enzyme,
-                            amiodarone, male, aspirin, smoker])
-
-            labels.append(label)
-
-        else:
-            missing_count += 1
-
-    if missing_count > 0:
-        print("WARNING:", missing_count, "records have missing data. They will not be processed.")
-
-    # TODO: add one-hot encoding for categorical features.
-
-    return np.array(features), np.array(labels)
+# def get_race(s, expected):
+#     return 1 if s.strip().lower() == expected.lower() else 0
+#
+#
+# def process_data(raw_data, keep_missing_data=False):
+#     features = []
+#     labels = []
+#     missing_count = 0
+#     for row in raw_data:
+#         age = get_age_decades(row[AGE])
+#         label = mg_to_dose(row[DOSE])
+#         height = get_float(row[HEIGHT])
+#         weight = get_float(row[WEIGHT])
+#         if (not VAL_UNKNOWN in [age, label, height, weight]) or keep_missing_data:
+#             asian = get_race(row[RACE], "Asian")
+#             black = get_race(row[RACE], "Black or African American")
+#             missing = 1 if row[RACE].lower() in {"", "na", "unknown"} else 0
+#
+#             meds = {m.strip(" ").lower() for m in row[MEDICATIONS].split(";")}
+#
+#             enzyme = 1 if {"carbamazepine", "phenytoin", "rifampin", "rifampicin"} & meds \
+#                           or row["Rifampin or Rifampicin"] == "1" \
+#                           or row["Carbamazepine (Tegretol)"] == "1" \
+#                           or row["Phenytoin (Dilantin)"] == "1" else 0
+#
+#             amiodarone = 1 if "amiodarone" in meds \
+#                               or row["Amiodarone (Cordarone)"] == "1" else 0
+#
+#             male = 1 if row["Gender"].strip().lower() == "male" else 0
+#             aspirin = 1 if "aspirin" in meds else 0
+#             smoker = 1 if row["Current Smoker"] == "1" else 0
+#
+#             features.append([age, height, weight, asian, black, missing, enzyme,
+#                             amiodarone, male, aspirin, smoker])
+#
+#             labels.append(label)
+#
+#         else:
+#             missing_count += 1
+#
+#     if missing_count > 0:
+#         print("WARNING:", missing_count, "records have missing data. They will not be processed.")
+#
+#     # TODO: add one-hot encoding for categorical features.
+#
+#     return np.array(features), np.array(labels)
 
 
 def get_logger(filename):

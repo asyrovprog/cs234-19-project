@@ -20,7 +20,7 @@ def plot(model, all_regrets, all_payoffs, all_conf_intervals):
 
 
 def evaluate(patients, model, num_iter=1, verbose=False):
-    indices = np.arange(len(labels))
+    indices = np.arange(len(patients))
     per_iter_regret = []
     per_iter_incorrect_frac = []
 

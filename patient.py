@@ -53,6 +53,7 @@ class Patient:
     """
     def __init__(self, record):
         self.properties = dict()
+        self.properties[DOSE] = parse_dose(record[DOSE])
         self.properties[GENDER] = parse_gender(record[GENDER])
         self.properties[RACE] = parse_race(record[RACE])
         self.properties[AGE] = parse_age_group(record[AGE])
@@ -60,7 +61,8 @@ class Patient:
             self.properties[p] = get_float(record[p])
         self.properties[INDICATION] = parse_indications(record[INDICATION])
         for p in BINARY_FEATURES:
-            self.properties[p] = parse_binary_feature(p)
+            self.properties[p] = parse_binary_feature(record[p])
+        self.properties[MEDICATIONS] = parse_medications(record[MEDICATIONS])
         self.properties[CYP2C9] = parse_genotype_CYP2C9(record[CYP2C9])
         self.properties[VKORC1_497] = parse_genotype_VKORC1_497(record[VKORC1_497])
         self.properties[VKORC1_1173] = parse_genotype_VKORC1_1173(record[VKORC1_1173])

@@ -1,13 +1,33 @@
 import re
-import pandas as pd
-import argparse
+# import pandas as pd
+# import argparse
 from feature import *
 from util import *
-from patient import *
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--in_file', required=True, type=str)
-parser.add_argument('--out_file', required=False, type=str)
+# parser = argparse.ArgumentParser()
+# parser.add_argument('--in_file', required=True, type=str)
+# parser.add_argument('--out_file', required=False, type=str)
+#
+
+
+def parse_dose(d):
+    """
+    convert dose (string) to na/low/med/high integers
+        0: < 21 mg/week  (LOW)
+        1: <= 49 mg/week  (MEDIUM)
+        2: else mg/week  (HIGH)
+    """
+    result = get_float(d)
+
+    if result != VAL_UNKNOWN:
+        if result < 21:
+            result = DOSE_LOW
+        elif result <= 49:
+            result = DOSE_MED
+        else:
+            result = DOSE_HIGH
+
+    return result
 
 
 def parse_gender(s):
@@ -52,13 +72,15 @@ def parse_age_group(s):
     :return: AgeGroup enum
     """
     age_group = AgeGroup.unknown
-    match = re.match(r'^\s*(\d+)\s*[-+].*', clean_value(s))
-    if match:
-        try:
-            age = int(match.group(1))
-            age_group = AgeGroup(age // 10)
-        except ValueError:
-            age_group = AgeGroup.unknown
+    s = clean_value(s)
+    if s is not None:
+        match = re.match(r'^\s*(\d+)\s*[-+].*', s)
+        if match:
+            try:
+                age = int(match.group(1))
+                age_group = AgeGroup(age // 10)
+            except ValueError:
+                age_group = AgeGroup.unknown
 
     return age_group
 
@@ -72,8 +94,9 @@ def parse_indications(s):
     :return: list of Indication enums
     """
     results = [Indication.unknown]
+    s = clean_value(s)
     if s is not None:
-        inds = re.findall(r"[\d+]", clean_value(s))
+        inds = re.findall(r"\d+", s)
         try:
             results = [Indication(int(clean_value(i))) for i in inds]
         except ValueError:
@@ -90,15 +113,17 @@ def parse_medications(s):
     :return: list of normalized medication strings
     """
     results = []
+    s = clean_value(s)
     if s is not None:
-        meds = re.split(r"[;,]", clean_value(s))
+        meds = re.split(r"[;,]", s)
         results = [(clean_value(i)) for i in meds]
 
     return results
 
 
 def parse_binary_feature(d):
-    return BinaryFeature.unknown if d is None else BinaryFeature(d)
+    result = get_int(d)
+    return None if result is None else BinaryFeature(result)
 
 
 def parse_genotype_CYP2C9(s):
@@ -110,8 +135,9 @@ def parse_genotype_CYP2C9(s):
     :return: list of GenoCYP2C9 enums
     """
     results = [GenoCYP2C9.unknown]
+    s = clean_value(s)
     if s is not None:
-        genos = re.findall(r"[\d+]", clean_value(s))
+        genos = re.findall(r"\d+", s)
         try:
             results = [GenoCYP2C9(int(clean_value(i))) for i in genos]
         except ValueError:
@@ -228,28 +254,6 @@ def parse_genotype_VKORC1_4451(s):
     return geno
 
 
-def parse_genotype_VKORC1_1639(s, race, vkorc1_2255, vkorc1_1173, vkorc1_1542):
-    """
-    Parse 'VKORC1 -1639 consensus' column in the csv and return GenoVKORC1_1639 enum
-
-    :param s: input string [A/A', nan, 'A/G', 'G/G']
-    :return: GenoVKORC1_1639 enum
-    """
-    geno = GenoVKORC1_1639.unknown
-    s = clean_value(s)
-    if s == "a/a":
-        geno = GenoVKORC1_1639.a_a
-    elif s == "a/g":
-        geno = GenoVKORC1_1639.a_g
-    elif s == "g/g":
-        geno = GenoVKORC1_1639.g_g
-
-    if geno == GenoVKORC1_1639.unknown:
-        geno = impute_genotype_GenoVKORC1_1639(race, vkorc1_2255, vkorc1_1173, vkorc1_1542)
-
-    return geno
-
-
 def impute_genotype_VKORC1_1639(race, vkorc1_2255, vkorc1_1173, vkorc1_1542):
     """
     Impute missing VKORC1 -1639 SNP rs9923231 according to p.13 of appx.pdf, section S4.
@@ -301,78 +305,89 @@ def impute_genotype_VKORC1_1639(race, vkorc1_2255, vkorc1_1173, vkorc1_1542):
     return GenoVKORC1_1639.unknown
 
 
-def parse_all_records(records):
+def parse_genotype_VKORC1_1639(s, race, vkorc1_2255, vkorc1_1173, vkorc1_1542):
     """
-    Parse data rows loaded from csv into list of Patient
+    Parse 'VKORC1 -1639 consensus' column in the csv and return GenoVKORC1_1639 enum
 
-    :param records: DictReader of the csv
-    :return: list of Patient
+    :param s: input string [A/A', nan, 'A/G', 'G/G']
+    :return: GenoVKORC1_1639 enum
     """
-    return [Patient(r) for r in records] if records is not None else None
+    geno = GenoVKORC1_1639.unknown
+    s = clean_value(s)
+    if s == "a/a":
+        geno = GenoVKORC1_1639.a_a
+    elif s == "a/g":
+        geno = GenoVKORC1_1639.a_g
+    elif s == "g/g":
+        geno = GenoVKORC1_1639.g_g
 
+    if geno == GenoVKORC1_1639.unknown:
+        geno = impute_genotype_VKORC1_1639(race, vkorc1_2255, vkorc1_1173, vkorc1_1542)
 
-def parse_df(df):
-    """
-    warfarin.csv contains 63 titled columns plus 3 empty columns at the end.
-    Below is the list of the 42 titled columns that we consider to use:
-    ------------------------------------------------
-    Gender *
-    Race *
-    Age *
-    Height (cm) *
-    Weight (kg) *
-    Indication for Warfarin Treatment *
-    Diabetes *
-    Congestive Heart Failure and/or Cardiomyopathy *
-    Valve Replacement *
-    Medications *
-    Aspirin *
-    Acetaminophen or Paracetamol (Tylenol) *
-    Was Dose of Acetaminophen or Paracetamol (Tylenol) >1300mg/day *
-    Simvastatin (Zocor) *
-    Atorvastatin (Lipitor) *
-    Fluvastatin (Lescol) *
-    Lovastatin (Mevacor) *
-    Pravastatin (Pravachol) *
-    Rosuvastatin (Crestor) *
-    Cerivastatin (Baycol) *
-    Amiodarone (Cordarone) *
-    Carbamazepine (Tegretol) *
-    Phenytoin (Dilantin) *
-    Rifampin or Rifampicin *
-    Sulfonamide Antibiotics *
-    Macrolide Antibiotics *
-    Anti-fungal Azoles *
-    "Herbal Medications, Vitamins, Supplements" *
-    Target INR *
-    Estimated Target INR Range Based on Indication (maybe?)
-    Subject Reached Stable Dose of Warfarin *
-    Therapeutic Dose of Warfarin (label)
-    INR on Reported Therapeutic Dose of Warfarin (maybe?)
-    Current Smoker *
-    CYP2C9 consensus *
-    VKORC1 -1639 consensus *
-    VKORC1 497 consensus *
-    VKORC1 1173 consensus *
-    VKORC1 1542 consensus *
-    VKORC1 3730 consensus *
-    VKORC1 2255 consensus *
-    VKORC1 -4451 consensus *
-    ------------------------------------------------
-    """
-    df[GENDER].apply(lambda x: parse_gender(x).value)
-    df[RACE].apply(lambda x: parse_race(x).value)
-    df[AGE].apply(lambda x: parse_age_group(x).value)
-    for col in NUMERICAL_FEATURES:
-        df[col].apply(lambda x: get_float(x).value)
-    for col in BINARY_FEATURES:
-        df[col].apply(lambda x: parse_binary_feature(x).value)
+    return geno
 
-
-if __name__ == '__main__':
-    args = parser.parse_args()
-
-    df = pd.read_csv(f"data/{args.in_file}")
+# def parse_df(df):
+#     """
+#     warfarin.csv contains 63 titled columns plus 3 empty columns at the end.
+#     Below is the list of the 42 titled columns that we consider to use:
+#     ------------------------------------------------
+#     Gender *
+#     Race *
+#     Age *
+#     Height (cm) *
+#     Weight (kg) *
+#     Indication for Warfarin Treatment *
+#     Diabetes *
+#     Congestive Heart Failure and/or Cardiomyopathy *
+#     Valve Replacement *
+#     Medications *
+#     Aspirin *
+#     Acetaminophen or Paracetamol (Tylenol) *
+#     Was Dose of Acetaminophen or Paracetamol (Tylenol) >1300mg/day *
+#     Simvastatin (Zocor) *
+#     Atorvastatin (Lipitor) *
+#     Fluvastatin (Lescol) *
+#     Lovastatin (Mevacor) *
+#     Pravastatin (Pravachol) *
+#     Rosuvastatin (Crestor) *
+#     Cerivastatin (Baycol) *
+#     Amiodarone (Cordarone) *
+#     Carbamazepine (Tegretol) *
+#     Phenytoin (Dilantin) *
+#     Rifampin or Rifampicin *
+#     Sulfonamide Antibiotics *
+#     Macrolide Antibiotics *
+#     Anti-fungal Azoles *
+#     "Herbal Medications, Vitamins, Supplements" *
+#     Target INR *
+#     Estimated Target INR Range Based on Indication (maybe?)
+#     Subject Reached Stable Dose of Warfarin *
+#     Therapeutic Dose of Warfarin (label)
+#     INR on Reported Therapeutic Dose of Warfarin (maybe?)
+#     Current Smoker *
+#     CYP2C9 consensus *
+#     VKORC1 -1639 consensus *
+#     VKORC1 497 consensus *
+#     VKORC1 1173 consensus *
+#     VKORC1 1542 consensus *
+#     VKORC1 3730 consensus *
+#     VKORC1 2255 consensus *
+#     VKORC1 -4451 consensus *
+#     ------------------------------------------------
+#     """
+#     df[GENDER].apply(lambda x: parse_gender(x).value)
+#     df[RACE].apply(lambda x: parse_race(x).value)
+#     df[AGE].apply(lambda x: parse_age_group(x).value)
+#     for col in NUMERICAL_FEATURES:
+#         df[col].apply(lambda x: get_float(x).value)
+#     for col in BINARY_FEATURES:
+#         df[col].apply(lambda x: parse_binary_feature(x).value)
+#
+#
+# if __name__ == '__main__':
+#     args = parser.parse_args()
+#
+#     df = pd.read_csv(f"data/{args.in_file}")
 
     # new_df = df.apply(parse_record, axis = 1)
     #
