@@ -24,6 +24,15 @@ class Recommender(object):
         if logger is None:
           self.logger = get_logger(config.log_path)
 
+    def process_features(self, in_data):
+        """
+        Algorithm-spcific feature processing
+
+        :param raw_data: raw input data
+        :return: set of features ready to be fed into the model
+        """
+        return in_data
+
     def reset(self):
         """
         Reset params.
@@ -55,9 +64,3 @@ class Recommender(object):
         """
         pass
 
-
-    def reset(self):
-        """
-        Reset model internal states.
-        """
-        pass

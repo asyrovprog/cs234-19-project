@@ -1,34 +1,36 @@
 import math
+import numpy as np
 from util import *
 from recommender import *
 
 
 class ClinicalDoseRecommender(Recommender):
 
-    def recommend(self, features):
+    def get_features(self, patient):
+        """
+        Algorithm-specific feature processing
+
+        :param patient: patient data
+        :return: feature vector for the given patient
+        """
+        features = [1, patient.properties[AGE]]
+        return features
+
+    def recommend(self, patient):
         """
         Recommend an action.
 
-        returns:
+        :param patient: patient data
+        :return:
             action: An integer representing the selected action.
-            payoff: A float representing the estimated payoff of the selected action.
-            conf_interval: A float representing the confidence interval for the estimated payoff
-                            of the selected action.
-
-
-        features = ["age", "height", "weight", "race_asian", "race_black",
-                     "race_missing", "enzyme", "amiodarone", "male", "aspirin",
-                     "smoker"]
+            payoff: None
+            conf_interval: None
         """
-        prediction = 4.0376 \
-                     - 0.2546 * features[0] \
-                     + 0.0118 * features[1] \
-                     + 0.0134 * features[2] \
-                     - 0.6752 * features[3] \
-                     + 0.4060 * features[4] \
-                     + 0.0443 * features[5] \
-                     + 1.2799 * features[6] \
-                     - 0.5695 * features[7]
+        weights = [4.0376, -0.2546, 0.0118, 0.0134, -0.6752, 0.4060, 0.0443, 1.2799, -0.5695]
 
-        return mg_to_dose(math.pow(prediction, 2)), None, None
+        features = self.get_features(patient)
+
+        dose = np.dot(weights, features)
+
+        return mg_to_dose(math.pow(dose, 2)), None, None
 

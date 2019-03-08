@@ -13,6 +13,15 @@ def undefined(s):
     return s == "NA" or s == ""
 
 
+def clean_value(s):
+    result = s
+    if isinstance(s, str):
+        result = s.strip().lower()
+        if result == "":
+            result = None
+    return result
+
+
 def mg_to_dose(d):
 
     """
@@ -65,7 +74,7 @@ def process_data(raw_data, keep_missing_data=False):
     missing_count = 0
     for row in raw_data:
         age = get_age_decades(row[AGE])
-        label = mg_to_dose(row[TARGET])
+        label = mg_to_dose(row[DOSE])
         height = get_float(row[HEIGHT])
         weight = get_float(row[WEIGHT])
         if (not VAL_UNKNOWN in [age, label, height, weight]) or keep_missing_data:
