@@ -2,6 +2,7 @@ import numpy as np
 from recommender import *
 from feature import *
 from constant import *
+from preprocess import *
 
 
 class LinUCBDisjointRecommender(Recommender):
@@ -50,24 +51,40 @@ class LinUCBDisjointRecommender(Recommender):
         :param patient: patient data
         :return: feature vector for the given patient
         """
-        enzyme = 1 if patient.properties[TEGRETOL] is BinaryFeature.true or \
-                      patient.properties[DILANTIN] is BinaryFeature.true or \
-                      patient.properties[RIFAMPIN] is BinaryFeature.true or \
-                      any(m in patient.properties[MEDICATIONS] for m in ["carbamazepine", "phenytoin", "rifampin",
-                                                                         "rifampicin"]) \
-                else 0
 
-        amiodarone = 1 if patient.properties[CORDARONE] is BinaryFeature.true or \
-                          "amiodarone" in patient.properties[MEDICATIONS] \
-                    else 0
-
-        features = [1, patient.properties[AGE].value, patient.properties[HEIGHT], patient.properties[WEIGHT],
-                    1 if patient.properties[RACE] is Race.asian else 0,
-                    1 if patient.properties[RACE] is Race.black else 0,
-                    1 if patient.properties[RACE] is Race.unknown else 0,
-                    enzyme, amiodarone]
-
+        features = [patient.properties[AGE].value, patient.properties[HEIGHT],
+                    patient.properties[WEIGHT]]   # size: 3
+        features += get_one_hot(patient.properties[GENDER])  # size: 3
+        features += get_one_hot(patient.properties[RACE])  # size: 5
+        # features += get_one_hot(patient.properties[INDICATION])  # size: 9
+        features += get_one_hot(patient.properties[VKORC1_1639])  # size: 4
         return np.array(features)
+
+    # def get_features(self, patient):
+    #     """
+    #     Algorithm-specific feature processing
+    #
+    #     :param patient: patient data
+    #     :return: feature vector for the given patient
+    #     """
+    #     enzyme = 1 if patient.properties[TEGRETOL] is BinaryFeature.true or \
+    #                   patient.properties[DILANTIN] is BinaryFeature.true or \
+    #                   patient.properties[RIFAMPIN] is BinaryFeature.true or \
+    #                   any(m in patient.properties[MEDICATIONS] for m in ["carbamazepine", "phenytoin", "rifampin",
+    #                                                                      "rifampicin"]) \
+    #             else 0
+    #
+    #     amiodarone = 1 if patient.properties[CORDARONE] is BinaryFeature.true or \
+    #                       "amiodarone" in patient.properties[MEDICATIONS] \
+    #                 else 0
+    #
+    #     features = [1, patient.properties[AGE].value, patient.properties[HEIGHT], patient.properties[WEIGHT],
+    #                 1 if patient.properties[RACE] is Race.asian else 0,
+    #                 1 if patient.properties[RACE] is Race.black else 0,
+    #                 1 if patient.properties[RACE] is Race.unknown else 0,
+    #                 enzyme, amiodarone]
+    #
+    #     return np.array(features)
 
     def update(self, arm, context_feature, reward):
         self.logger.debug(f"[{self.config.algo_name}] update: action={arm}; reward={reward}; context={context_feature}")

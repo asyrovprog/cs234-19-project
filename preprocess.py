@@ -1,4 +1,5 @@
 import re
+import numpy as np
 # import pandas as pd
 # import argparse
 from feature import *
@@ -8,6 +9,22 @@ from util import *
 # parser.add_argument('--in_file', required=True, type=str)
 # parser.add_argument('--out_file', required=False, type=str)
 #
+
+
+def get_one_hot(enum_value):
+    """
+    Convert enum value into one hot vector
+
+    :param enum_value: input categorical enum value
+    :return: one hot vector for the given enum value
+    """
+    enum_type = type(enum_value)
+    results = [0] * len(enum_type)
+    enum_list = list(enum_type)
+    if enum_value in enum_list:
+        results[enum_list.index(enum_value)] = 1
+    return results
+
 
 
 def parse_dose(d):

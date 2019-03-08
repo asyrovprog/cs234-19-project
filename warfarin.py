@@ -27,14 +27,21 @@ def get_recommender(algo):
     return model
 
 
-def parse_all_records(records):
+def parse_all_records(records, keep_missing=True):
     """
     Parse data rows loaded from csv into list of Patient
 
     :param records: DictReader of the csv
     :return: list of Patient
     """
-    return [Patient(r) for r in records] if records is not None else None
+    results = list()
+    for r in records:
+        patient = Patient(r)
+        if keep_missing or (patient.properties[AGE] is AgeGroup.unknown or patient.properties[HEIGHT] == VAL_UNKNOWN \
+            or patient.properties[WEIGHT] == VAL_UNKNOWN or patient.properties[DOSE] == VAL_UNKNOWN):
+            results.append(patient)
+
+    return results
 
 
 def load_data():

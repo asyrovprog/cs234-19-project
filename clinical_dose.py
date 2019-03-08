@@ -45,10 +45,8 @@ class ClinicalDoseRecommender(Recommender):
             conf_interval: None
         """
         weights = np.array([4.0376, -0.2546, 0.0118, 0.0134, -0.6752, 0.4060, 0.0443, 1.2799, -0.5695])
-
         features = self.get_features(patient)
-
         dose = np.dot(weights, features)
-
         return parse_dose(math.pow(dose, 2)), None, None
+
 
