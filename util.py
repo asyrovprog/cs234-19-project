@@ -88,7 +88,7 @@ def process_data(raw_data, keep_missing_data=False):
             smoker = 1 if row["Current Smoker"] == "1" else 0
 
             features.append([age, height, weight, asian, black, missing, enzyme,
-                            amiodarone, male, aspirin, smoker])
+                            amiodarone, male, aspirin, smoker, 1])
 
             labels.append(label)
 

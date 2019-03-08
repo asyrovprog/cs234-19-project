@@ -37,5 +37,6 @@ if __name__ == '__main__':
     features, labels = load_data()
     model = get_recommender(args.algo, features)
 
-    regret, incorrect_frac = evaluation.evaluate(features, labels, model, 10)
-    print(f"[{model.config.algo_name}] regret={regret}; incorrect fraction={incorrect_frac}")
+    regret, incorrect_frac = evaluation.evaluate(features, labels, model, 50)
+    accuracy = 1 - incorrect_frac
+    print(f"[{model.config.algo_name}] regret={regret}; incorrect fraction={incorrect_frac}, accuracy={accuracy}")
