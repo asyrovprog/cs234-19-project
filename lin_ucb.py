@@ -58,8 +58,6 @@ class LinUCBDisjointRecommender(Recommender):
             patient.properties[WEIGHT] == VAL_UNKNOWN:
             return None
 
-        # features = [1, patient.properties[AGE].value, patient.properties[HEIGHT],
-        #             patient.properties[WEIGHT]]  # size: 4
         features = [1, patient.properties[AGE].value]   # size 2
 
         features += [patient.properties[f] for f in NUMERICAL_FEATURES[:2]]     # size 2
