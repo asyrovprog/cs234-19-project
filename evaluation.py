@@ -19,15 +19,15 @@ def plot(model, all_regrets, all_payoffs, all_conf_intervals):
         export_plot(np.mean(all_conf_intervals, axis=0), "Confidence Interval", model.config.algo_name, model.config.cfinterval_plot_output)
 
 
-def evaluate(features, labels, model, num_iter=1, verbose=False):
-    indices = np.arange(len(labels))
+def evaluate(patients, model, num_iter=1, verbose=False):
+    indices = np.arange(len(patients))
     per_iter_regret = []
     per_iter_incorrect_frac = []
 
     # log all data for plotting
-    all_regrets = np.full((num_iter, len(labels)), np.inf) if model.config.regret_plot_output is not None else None
-    all_payoffs = np.full((num_iter, len(labels)), -np.inf) if model.config.payoff_plot_output is not None else None
-    all_conf_intervals = np.zeros((num_iter, len(labels))) if model.config.cfinterval_plot_output is not None else None
+    all_regrets = np.full((num_iter, len(patients)), np.inf) if model.config.regret_plot_output is not None else None
+    all_payoffs = np.full((num_iter, len(patients)), -np.inf) if model.config.payoff_plot_output is not None else None
+    all_conf_intervals = np.zeros((num_iter, len(patients))) if model.config.cfinterval_plot_output is not None else None
 
     for iter in range(num_iter):
         model.reset()
@@ -36,16 +36,19 @@ def evaluate(features, labels, model, num_iter=1, verbose=False):
         regrets = []
         incorrects = []
         for index in indices:
-            feature = features[index]
-            label = labels[index]
+            patient = patients[index]
+            features = model.get_features(patient)
+            if features is None:
+                continue
+            label = patient.properties[DOSE]
 
-            arm, payoff, conf_interval = model.recommend(feature)
-            reward = get_reward(arm, label)
-            model.update(arm, feature, reward)
+            action, payoff, conf_interval = model.recommend(patient)
+            reward = get_reward(action, label)
+            model.update(action, features, reward)
 
             regret = get_reward(label, label) - reward
             regrets.append(regret)
-            incorrects.append(0 if arm == label else 1)
+            incorrects.append(0 if action == label else 1)
 
             # log regret, estimated payoff & its confidence interval
             if all_regrets is not None:

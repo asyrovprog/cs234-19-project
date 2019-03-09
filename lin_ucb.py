@@ -1,5 +1,8 @@
 import numpy as np
 from recommender import *
+from feature import *
+from constant import *
+from preprocess import *
 
 
 class LinUCBDisjointRecommender(Recommender):
@@ -11,7 +14,7 @@ class LinUCBDisjointRecommender(Recommender):
     In Proceedings of the 19th International Conference on World Wide Web,
     661–70. ACM.
     """
-    def __init__(self, config, d):
+    def __init__(self, config):
         """
         Args:
             alpha: regularization parameter.
@@ -20,7 +23,7 @@ class LinUCBDisjointRecommender(Recommender):
         """
         super().__init__(config)
         self.alpha = self.config.alpha
-        self.d = d
+        self.d = self.config.feature_count
         self.num_arms = len(self.config.actions)
 
         # Convenience variable.
@@ -41,16 +44,33 @@ class LinUCBDisjointRecommender(Recommender):
             self.A[a] = np.identity(self.d)               # d x d
             self.b[a] = np.atleast_2d(np.zeros(self.d)).T # d x 1
 
+    def get_features(self, patient):
+        """
+        Algorithm-specific feature processing
+
+        :param patient: patient data
+        :return: feature vector for the given patient
+        """
+
+        features = [1, patient.properties[AGE].value, patient.properties[HEIGHT],
+                    patient.properties[WEIGHT]]   # size: 3
+        features += get_one_hot(patient.properties[GENDER])  # size: 3
+        features += get_one_hot(patient.properties[RACE])  # size: 5
+        features += get_one_hot(patient.properties[VKORC1_1639])  # size: 4
+        return np.array(features)
+
     def update(self, arm, context_feature, reward):
         self.logger.debug(f"[{self.config.algo_name}] update: action={arm}; reward={reward}; context={context_feature}")
         self.A[arm] += np.outer(context_feature, context_feature)
         self.b[arm] += reward * np.reshape(context_feature,(self.d, 1))
 
-    def recommend(self, fvec):
+    def recommend(self, patient):
         payoff = {}
         best_arm = None
         best_payoff = -float('inf')
         best_conf_interval = None
+
+        fvec = self.get_features(patient)
 
         for a in range(self.num_arms):
             invA = np.linalg.inv(self.A[a])
@@ -68,4 +88,3 @@ class LinUCBDisjointRecommender(Recommender):
                           f"estimated payoff={best_payoff}; conf interval={best_conf_interval}")
 
         return best_arm, best_payoff, best_conf_interval
-

@@ -1,34 +1,59 @@
 import math
-from util import *
+import numpy as np
 from recommender import *
+from feature import *
+from preprocess import *
 
 
 class ClinicalDoseRecommender(Recommender):
 
-    def recommend(self, features):
+    def get_features(self, patient):
+        """
+        Algorithm-specific feature processing
+
+        :param patient: patient data
+        :return: feature vector for the given patient
+        """
+        # missing values, we can't apply the algorithm
+        if patient.properties[AGE].value == AgeGroup.unknown or \
+            patient.properties[HEIGHT] == VAL_UNKNOWN or \
+            patient.properties[WEIGHT] == VAL_UNKNOWN:
+            return None
+
+        enzyme = 1 if patient.properties[TEGRETOL] is BinaryFeature.true or \
+                      patient.properties[DILANTIN] is BinaryFeature.true or \
+                      patient.properties[RIFAMPIN] is BinaryFeature.true or \
+                      any(m in patient.properties[MEDICATIONS] for m in ["carbamazepine", "phenytoin", "rifampin",
+                                                                         "rifampicin"]) \
+                else 0
+
+        amiodarone = 1 if patient.properties[CORDARONE] is BinaryFeature.true or \
+                         "amiodarone" in patient.properties[MEDICATIONS] \
+                    else 0
+
+        features = [1, patient.properties[AGE].value, patient.properties[HEIGHT], patient.properties[WEIGHT],
+                    1 if patient.properties[RACE] is Race.asian else 0,
+                    1 if patient.properties[RACE] is Race.black else 0,
+                    1 if patient.properties[RACE] is Race.unknown else 0,
+                    enzyme, amiodarone]
+
+        return np.array(features)
+
+    def recommend(self, patient):
         """
         Recommend an action.
 
-        returns:
+        :param patient: patient data
+        :return:
             action: An integer representing the selected action.
-            payoff: A float representing the estimated payoff of the selected action.
-            conf_interval: A float representing the confidence interval for the estimated payoff
-                            of the selected action.
-
-
-        features = ["age", "height", "weight", "race_asian", "race_black",
-                     "race_missing", "enzyme", "amiodarone", "male", "aspirin",
-                     "smoker"]
+            payoff: None
+            conf_interval: None
         """
-        prediction = 4.0376 \
-                     - 0.2546 * features[0] \
-                     + 0.0118 * features[1] \
-                     + 0.0134 * features[2] \
-                     - 0.6752 * features[3] \
-                     + 0.4060 * features[4] \
-                     + 0.0443 * features[5] \
-                     + 1.2799 * features[6] \
-                     - 0.5695 * features[7]
+        weights = np.array([4.0376, -0.2546, 0.0118, 0.0134, -0.6752, 0.4060, 0.0443, 1.2799, -0.5695])
+        features = self.get_features(patient)
+        if features is None:
+            return None, None, None
+        dose = np.dot(weights, features)
+        return parse_dose(math.pow(dose, 2)), None, None
 
-        return mg_to_dose(math.pow(prediction, 2)), None, None
 

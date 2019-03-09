@@ -24,6 +24,15 @@ class Recommender(object):
         if logger is None:
           self.logger = get_logger(config.log_path)
 
+    def get_features(self, patient):
+        """
+        Algorithm-specific feature processing
+
+        :param patient: patient data
+        :return: feature vector for the given patient
+        """
+        pass
+
     def reset(self):
         """
         Reset params.
@@ -55,9 +64,3 @@ class Recommender(object):
         """
         pass
 
-
-    def reset(self):
-        """
-        Reset model internal states.
-        """
-        pass

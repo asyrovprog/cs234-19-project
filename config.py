@@ -42,11 +42,10 @@ class ConfigLinUCBDisjoint:
         self.payoff_plot_output = self.output_path + "payoff.png"
         self.cfinterval_plot_output = self.output_path + "cfinterval.png"
 
-        # model and training config
-
         # parameters for the model
         self.actions = [DOSE_LOW, DOSE_MED, DOSE_HIGH]
         self.alpha = 0.01
+        self.feature_count = 16  # this must match actual feature count
 
 
 def get_config(algo_name):
