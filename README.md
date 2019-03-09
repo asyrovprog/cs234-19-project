@@ -52,8 +52,13 @@ $ python warfarin.py --algo=linucb_disjoint
 
 ## TODOS:
 - [X] implement "Imputation of VKORC1 SNPs"
-- [ ] add better data preprocessing. Use one-hot encoding for categorical feature, etc.
-- [ ] add model eval logging.
-- [ ] implement linear bandit
+- [X] add better data preprocessing. Use one-hot encoding for categorical feature, etc.
+- [X] add model eval logging.
+- [X] implement linear bandit
+- [ ] alternate learning/evaluation approach
+- [ ] explore feature normalization
+- [ ] add new feature (BMI instead of height/weight? INR data?)
+- [ ] variations of LinUCB (hybrid, SupLin?)
+- [ ] implement Lasso bandit
 - [ ] discuss if we need multiple action update in LinUCB
 
