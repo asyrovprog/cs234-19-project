@@ -1,7 +1,6 @@
 import csv
 import argparse
 import evaluation
-import util
 from config import *
 from fixed_dose import *
 from clinical_dose import *
@@ -55,5 +54,7 @@ if __name__ == '__main__':
     patients = load_data()
     model = get_recommender(args.algo)
 
-    regret, incorrect_frac = evaluation.evaluate(patients, model, 10)
-    print(f"[{model.config.algo_name}] regret={regret}; incorrect fraction={incorrect_frac}")
+    regret, incorrect_frac = evaluation.evaluate(patients, model, 50)
+    accuracy = 1 - incorrect_frac
+    print(f"[{model.config.algo_name}] regret={regret}; incorrect fraction={incorrect_frac}, accuracy={accuracy}")
+

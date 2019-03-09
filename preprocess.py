@@ -1,14 +1,7 @@
 import re
 import numpy as np
-# import pandas as pd
-# import argparse
 from feature import *
 from util import *
-
-# parser = argparse.ArgumentParser()
-# parser.add_argument('--in_file', required=True, type=str)
-# parser.add_argument('--out_file', required=False, type=str)
-#
 
 
 def get_one_hot(enum_value):
@@ -342,70 +335,3 @@ def parse_genotype_VKORC1_1639(s, race, vkorc1_2255, vkorc1_1173, vkorc1_1542):
         geno = impute_genotype_VKORC1_1639(race, vkorc1_2255, vkorc1_1173, vkorc1_1542)
 
     return geno
-
-# def parse_df(df):
-#     """
-#     warfarin.csv contains 63 titled columns plus 3 empty columns at the end.
-#     Below is the list of the 42 titled columns that we consider to use:
-#     ------------------------------------------------
-#     Gender *
-#     Race *
-#     Age *
-#     Height (cm) *
-#     Weight (kg) *
-#     Indication for Warfarin Treatment *
-#     Diabetes *
-#     Congestive Heart Failure and/or Cardiomyopathy *
-#     Valve Replacement *
-#     Medications *
-#     Aspirin *
-#     Acetaminophen or Paracetamol (Tylenol) *
-#     Was Dose of Acetaminophen or Paracetamol (Tylenol) >1300mg/day *
-#     Simvastatin (Zocor) *
-#     Atorvastatin (Lipitor) *
-#     Fluvastatin (Lescol) *
-#     Lovastatin (Mevacor) *
-#     Pravastatin (Pravachol) *
-#     Rosuvastatin (Crestor) *
-#     Cerivastatin (Baycol) *
-#     Amiodarone (Cordarone) *
-#     Carbamazepine (Tegretol) *
-#     Phenytoin (Dilantin) *
-#     Rifampin or Rifampicin *
-#     Sulfonamide Antibiotics *
-#     Macrolide Antibiotics *
-#     Anti-fungal Azoles *
-#     "Herbal Medications, Vitamins, Supplements" *
-#     Target INR *
-#     Estimated Target INR Range Based on Indication (maybe?)
-#     Subject Reached Stable Dose of Warfarin *
-#     Therapeutic Dose of Warfarin (label)
-#     INR on Reported Therapeutic Dose of Warfarin (maybe?)
-#     Current Smoker *
-#     CYP2C9 consensus *
-#     VKORC1 -1639 consensus *
-#     VKORC1 497 consensus *
-#     VKORC1 1173 consensus *
-#     VKORC1 1542 consensus *
-#     VKORC1 3730 consensus *
-#     VKORC1 2255 consensus *
-#     VKORC1 -4451 consensus *
-#     ------------------------------------------------
-#     """
-#     df[GENDER].apply(lambda x: parse_gender(x).value)
-#     df[RACE].apply(lambda x: parse_race(x).value)
-#     df[AGE].apply(lambda x: parse_age_group(x).value)
-#     for col in NUMERICAL_FEATURES:
-#         df[col].apply(lambda x: get_float(x).value)
-#     for col in BINARY_FEATURES:
-#         df[col].apply(lambda x: parse_binary_feature(x).value)
-#
-#
-# if __name__ == '__main__':
-#     args = parser.parse_args()
-#
-#     df = pd.read_csv(f"data/{args.in_file}")
-
-    # new_df = df.apply(parse_record, axis = 1)
-    #
-    # new_df.to_csv(f"data/{args.out_file}", index=False)

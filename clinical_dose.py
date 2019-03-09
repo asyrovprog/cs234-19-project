@@ -1,6 +1,5 @@
 import math
 import numpy as np
-from util import *
 from recommender import *
 from feature import *
 from preprocess import *
@@ -55,8 +54,6 @@ class ClinicalDoseRecommender(Recommender):
         if features is None:
             return None, None, None
         dose = np.dot(weights, features)
-        # print(f"new recommend features: {features}")
-        # print(f"new recommend dose: {dose}")
         return parse_dose(math.pow(dose, 2)), None, None
 
 
