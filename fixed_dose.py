@@ -12,6 +12,9 @@ class FixedDoseRecommender(Recommender):
         :param patient: patient data
         :return: feature vector for the given patient
         """
+        # missing values, we can't apply the algorithm
+        if patient.properties[DOSE] == VAL_UNKNOWN:
+            return None
         return 1
 
     def recommend(self, features):

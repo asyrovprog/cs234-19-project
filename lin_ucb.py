@@ -52,7 +52,8 @@ class LinUCBDisjointRecommender(Recommender):
         :return: feature vector for the given patient
         """
         # missing values, we can't apply the algorithm
-        if patient.properties[AGE].value == AgeGroup.unknown or \
+        if patient.properties[DOSE] == VAL_UNKNOWN or \
+            patient.properties[AGE].value == AgeGroup.unknown or \
             patient.properties[HEIGHT] == VAL_UNKNOWN or \
             patient.properties[WEIGHT] == VAL_UNKNOWN:
             return None
@@ -62,6 +63,7 @@ class LinUCBDisjointRecommender(Recommender):
         features = [1, patient.properties[AGE].value]   # size 2
 
         features += [patient.properties[f] for f in NUMERICAL_FEATURES[:2]]     # size 2
+        # features += [patient.properties[f] for f in NUMERICAL_FEATURES]     # size 4
 
         features += get_one_hot_from_list(patient.properties[INDICATION])   # size: 9
 

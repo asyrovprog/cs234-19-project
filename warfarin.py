@@ -44,7 +44,7 @@ def parse_all_records(records, keep_missing=True):
 
 
 def load_data():
-    raw_data = csv.DictReader(open("data/warfarin_5528.csv"))
+    raw_data = csv.DictReader(open("data/warfarin.csv"))
     return parse_all_records(raw_data)
 
 
