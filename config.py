@@ -45,7 +45,7 @@ class ConfigLinUCBDisjoint:
         # parameters for the model
         self.actions = [DOSE_LOW, DOSE_MED, DOSE_HIGH]
         self.alpha = 0.01
-        self.feature_count = 16  # this must match actual feature count
+        self.feature_count = 133  # this must match actual feature count
 
 
 def get_config(algo_name):

@@ -51,12 +51,31 @@ class LinUCBDisjointRecommender(Recommender):
         :param patient: patient data
         :return: feature vector for the given patient
         """
+        # missing values, we can't apply the algorithm
+        if patient.properties[AGE].value == AgeGroup.unknown or \
+            patient.properties[HEIGHT] == VAL_UNKNOWN or \
+            patient.properties[WEIGHT] == VAL_UNKNOWN:
+            return None
 
-        features = [1, patient.properties[AGE].value, patient.properties[HEIGHT],
-                    patient.properties[WEIGHT]]   # size: 3
+        # features = [1, patient.properties[AGE].value, patient.properties[HEIGHT],
+        #             patient.properties[WEIGHT]]  # size: 4
+        features = [1, patient.properties[AGE].value]   # size 2
+
+        features += [patient.properties[f] for f in NUMERICAL_FEATURES[:2]]     # size 2
+
+        features += get_one_hot_from_list(patient.properties[INDICATION])   # size: 9
+
         features += get_one_hot(patient.properties[GENDER])  # size: 3
         features += get_one_hot(patient.properties[RACE])  # size: 5
-        features += get_one_hot(patient.properties[VKORC1_1639])  # size: 4
+
+        for f in BINARY_FEATURES:
+            features += get_one_hot(patient.properties[f]) # size: 23 * 3 = 69
+
+        features += get_one_hot_from_list(patient.properties[CYP2C9]) # size: 15
+
+        for f in VKORC1_GENO_FEATURES:
+            features += get_one_hot(patient.properties[f]) # size: 7 * 4 = 28
+
         return np.array(features)
 
     def update(self, arm, context_feature, reward):
@@ -71,6 +90,8 @@ class LinUCBDisjointRecommender(Recommender):
         best_conf_interval = None
 
         fvec = self.get_features(patient)
+        if fvec is None:
+            return None, None, None
 
         for a in range(self.num_arms):
             invA = np.linalg.inv(self.A[a])
