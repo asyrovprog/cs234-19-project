@@ -15,6 +15,12 @@ class ClinicalDoseRecommender(Recommender):
         :param patient: patient data
         :return: feature vector for the given patient
         """
+        # missing values, we can't apply the algorithm
+        if patient.properties[AGE].value == AgeGroup.unknown or \
+            patient.properties[HEIGHT] == VAL_UNKNOWN or \
+            patient.properties[WEIGHT] == VAL_UNKNOWN:
+            return None
+
         enzyme = 1 if patient.properties[TEGRETOL] is BinaryFeature.true or \
                       patient.properties[DILANTIN] is BinaryFeature.true or \
                       patient.properties[RIFAMPIN] is BinaryFeature.true or \
@@ -46,7 +52,11 @@ class ClinicalDoseRecommender(Recommender):
         """
         weights = np.array([4.0376, -0.2546, 0.0118, 0.0134, -0.6752, 0.4060, 0.0443, 1.2799, -0.5695])
         features = self.get_features(patient)
+        if features is None:
+            return None, None, None
         dose = np.dot(weights, features)
+        # print(f"new recommend features: {features}")
+        # print(f"new recommend dose: {dose}")
         return parse_dose(math.pow(dose, 2)), None, None
 
 

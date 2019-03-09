@@ -51,17 +51,17 @@ def clean_value(s):
 #     return result
 
 
-# def get_age_decades(s):
-#     match = re.match(r'^\s*(\d+)\s*[-+].*', s.strip())
-#     if match:
-#         try:
-#             age = int(match.group(1))
-#             age = age // 10
-#         except ValueError:
-#             age = VAL_UNKNOWN
-#         return age
-#     else:
-#         return VAL_UNKNOWN
+def get_age_decades(s):
+    match = re.match(r'^\s*(\d+)\s*[-+].*', s.strip())
+    if match:
+        try:
+            age = int(match.group(1))
+            age = age // 10
+        except ValueError:
+            age = VAL_UNKNOWN
+        return age
+    else:
+        return VAL_UNKNOWN
 
 
 def get_float(s):
@@ -92,15 +92,16 @@ def get_int(s):
     return value
 
 
-# def get_race(s, expected):
-#     return 1 if s.strip().lower() == expected.lower() else 0
-#
-#
+def get_race(s, expected):
+    return 1 if s.strip().lower() == expected.lower() else 0
+
+
 # def process_data(raw_data, keep_missing_data=False):
 #     features = []
 #     labels = []
 #     missing_count = 0
 #     for row in raw_data:
+#         print(f"row={row}")
 #         age = get_age_decades(row[AGE])
 #         label = mg_to_dose(row[DOSE])
 #         height = get_float(row[HEIGHT])

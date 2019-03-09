@@ -38,6 +38,8 @@ def evaluate(patients, model, num_iter=1, verbose=False):
         for index in indices:
             patient = patients[index]
             features = model.get_features(patient)
+            if features is None:
+                continue
             label = patient.properties[DOSE]
 
             action, payoff, conf_interval = model.recommend(patient)
