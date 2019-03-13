@@ -2,7 +2,6 @@
 import numpy as np
 from util import *
 
-
 def get_reward(action, label):
     return CORRECT_DOSE_REWARD if action == label else INCORRECT_DOSE_REWARD
 
@@ -30,6 +29,7 @@ def evaluate(patients, model, num_iter=1, verbose=False):
     all_conf_intervals = np.zeros((num_iter, len(patients))) if model.config.cfinterval_plot_output is not None else None
 
     for iter in range(num_iter):
+        print_flush(".", end="")
         model.reset()
 
         np.random.shuffle(indices)
@@ -65,5 +65,6 @@ def evaluate(patients, model, num_iter=1, verbose=False):
         per_iter_incorrect_frac.append(np.mean(incorrects))
 
     plot(model, all_regrets, all_payoffs, all_conf_intervals)
+    print_flush("")
 
     return np.mean(per_iter_regret), np.mean(per_iter_incorrect_frac)
