@@ -55,10 +55,11 @@ $ python warfarin.py --algo=linucb_disjoint
 - [X] add better data preprocessing. Use one-hot encoding for categorical feature, etc.
 - [X] add model eval logging.
 - [X] implement linear bandit
-- [ ] alternate learning/evaluation approach
-- [ ] explore feature normalization
-- [ ] add new feature (BMI instead of height/weight? INR data?)
+- [X] alternate learning/evaluation approach
+- [X] explore feature normalization
+- [X] add new feature (BMI instead of height/weight? INR data?)
 - [ ] variations of LinUCB (hybrid, SupLin?)
 - [ ] implement Lasso bandit
-- [ ] discuss if we need multiple action update in LinUCB
+- [ ] export training and testing results to file
+- [ ] create combined plots
 
