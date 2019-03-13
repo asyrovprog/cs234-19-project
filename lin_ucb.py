@@ -58,10 +58,16 @@ class LinUCBDisjointRecommender(Recommender):
             patient.properties[WEIGHT] == VAL_UNKNOWN:
             return None
 
-        features = [1, patient.properties[AGE].value]   # size 2
+        features = list([1, patient.properties[AGE].value])   # size 2
 
-        features += [patient.properties[f] for f in NUMERICAL_FEATURES[:2]]     # size 2
         # features += [patient.properties[f] for f in NUMERICAL_FEATURES]     # size 4
+        # features.append(get_bmi(patient.properties[HEIGHT], patient.properties[WEIGHT]))    # size 1
+        features.append(feature_scaling(BMI_MIN, BMI_MAX, get_bmi(patient.properties[HEIGHT],
+                                                                  patient.properties[WEIGHT])))   # size 1
+        # features.append(feature_scaling(HEIGHT_MIN, HEIGHT_MAX, patient.properties[HEIGHT]))    # size 1
+        # features.append(feature_scaling(WEIGHT_MIN, WEIGHT_MAX, patient.properties[WEIGHT]))    # size 1
+        features.append(feature_scaling(INR_MIN, INR_MAX, patient.properties[INR]))    # size 1
+        features.append(feature_scaling(INR_MIN, INR_MAX, patient.properties[TARGET_INR]))    # size 1
 
         features += get_one_hot_from_list(patient.properties[INDICATION])   # size: 9
 
@@ -81,7 +87,7 @@ class LinUCBDisjointRecommender(Recommender):
     def update(self, arm, context_feature, reward):
         self.logger.debug(f"[{self.config.algo_name}] update: action={arm}; reward={reward}; context={context_feature}")
         self.A[arm] += np.outer(context_feature, context_feature)
-        self.b[arm] += reward * np.reshape(context_feature,(self.d, 1))
+        self.b[arm] += reward * np.reshape(context_feature, (self.d, 1))
 
     def recommend(self, patient):
         payoff = {}
@@ -109,3 +115,5 @@ class LinUCBDisjointRecommender(Recommender):
                           f"estimated payoff={best_payoff}; conf interval={best_conf_interval}")
 
         return best_arm, best_payoff, best_conf_interval
+
+
