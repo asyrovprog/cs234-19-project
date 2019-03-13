@@ -49,6 +49,9 @@ $ python warfarin.py --algo=linucb_disjoint
 
 ## References:
   1. [A Contextual-Bandit Approach to Personalized News Article Recommendation](https://arxiv.org/abs/1003.0146)
+  2. [Contextual Bandits with Linear Payoff Functions](http://proceedings.mlr.press/v15/chu11a/chu11a.pdf)
+  3. [Online Decision-Making with High-Dimensional Covariates](http://web.stanford.edu/~bayati/papers/lassoBandit.pdf)
+  4. [A Practical Method for Solving Contextual Bandit Problems Using Decision Trees](https://arxiv.org/pdf/1706.04687.pdf)
 
 ## TODOS:
 - [X] implement "Imputation of VKORC1 SNPs"

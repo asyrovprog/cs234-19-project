@@ -1,6 +1,8 @@
 import logging
 import re
 import matplotlib
+import sys
+
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from constant import *
@@ -90,3 +92,8 @@ def export_plot(ys, ylabel, title, filename):
     plt.title(title)
     plt.savefig(filename)
     plt.close()
+
+
+def print_flush(s, end='\n'):
+    print(s, end=end)
+    sys.stdout.flush()
