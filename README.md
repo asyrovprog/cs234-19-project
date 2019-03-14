@@ -77,6 +77,6 @@ $ python warfarin.py --algo=all --iter=10 --train_ratio=0.7
 - [X] add new feature (BMI instead of height/weight? INR data?)
 - [ ] variations of LinUCB (hybrid, SupLin?)
 - [ ] implement Lasso bandit
-- [ ] export training and testing results to file
+- [X] export training and testing results to file
 - [ ] create combined plots
 - [ ] experiment with LinUCB's hyperparameter alpha value?
