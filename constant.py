@@ -36,10 +36,10 @@ SULFONAMIDE = "Sulfonamide Antibiotics"
 MACROLIDE = "Macrolide Antibiotics"
 ANTI_FUNGAL = "Anti-fungal Azoles"
 HERBAL = "Herbal Medications, Vitamins, Supplements"
-TARGET_INR = "Target INR"
-EST_TARGET_INR = "Estimated Target INR Range Based on Indication"
+TARGET_INR = "Target INR"   # not used
+EST_TARGET_INR = "Estimated Target INR Range Based on Indication"   # not used
 IS_STABLE = "Subject Reached Stable Dose of Warfarin"
-INR = "INR on Reported Therapeutic Dose of Warfarin"
+INR = "INR on Reported Therapeutic Dose of Warfarin"    # not used
 
 # Genotypes: 8
 CYP2C9 = "CYP2C9 consensus"
@@ -53,6 +53,7 @@ VKORC1_4451 = "VKORC1 -4451 consensus"
 
 
 VAL_UNKNOWN = -1
+
 DOSE_LOW = 0
 DOSE_MED = 1
 DOSE_HIGH = 2
@@ -60,11 +61,29 @@ DOSE_HIGH = 2
 INCORRECT_DOSE_REWARD = -1
 CORRECT_DOSE_REWARD = 0
 
-# 2 features with numeric values
-NUMERICAL_FEATURES = [HEIGHT, WEIGHT]
+
+# value ranges for feature scaling
+HEIGHT_MAX = 230    # 230cm ~= 7.55ft
+HEIGHT_MIN = 90     # 90cm ~= 2.95ft
+WEIGHT_MAX = 250    # 250kg ~= 551lb
+WEIGHT_MIN = 20     # 20kg ~= 44lb
+INR_MAX = 7
+INR_MIN = 0
+BMI_MAX = 50
+BMI_MIN = 0
+
+# 4 features with numeric values
+NUMERICAL_FEATURES = [HEIGHT, WEIGHT, TARGET_INR, INR]
 
 # 23 features with binary values
 BINARY_FEATURES = [DIABETES, CHF, VALVE_REPLACE, ASPIRIN, TYLENOL, WAS_DOSE, ZOCOR, LIPITOR,
 LESCOL, MEVACOR, PRAVACHOL, CRESTOR, BAYCOL, CORDARONE, TEGRETOL, DILANTIN, RIFAMPIN, SULFONAMIDE,
 MACROLIDE, ANTI_FUNGAL, HERBAL, IS_STABLE, SMOKER]
 
+# 7 VKORC1 genotype features
+VKORC1_GENO_FEATURES = [VKORC1_1639, VKORC1_497, VKORC1_1173, VKORC1_1542,
+                 VKORC1_3730, VKORC1_2255, VKORC1_4451]
+
+
+# command line options for algorithms
+ALGOS = ["fixed_dose", "clinical_dose", "linucb_disjoint"]

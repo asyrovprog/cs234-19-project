@@ -15,7 +15,8 @@ class ClinicalDoseRecommender(Recommender):
         :return: feature vector for the given patient
         """
         # missing values, we can't apply the algorithm
-        if patient.properties[AGE].value == AgeGroup.unknown or \
+        if patient.properties[DOSE] == VAL_UNKNOWN or \
+            patient.properties[AGE].value == AgeGroup.unknown or \
             patient.properties[HEIGHT] == VAL_UNKNOWN or \
             patient.properties[WEIGHT] == VAL_UNKNOWN:
             return None
