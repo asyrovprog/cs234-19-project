@@ -1,13 +1,96 @@
-# Utility function for evaluation.
+# Utility functions for evaluation.
 import numpy as np
+import math
 from util import *
 
-def get_reward(action, label):
-    return CORRECT_DOSE_REWARD if action == label else INCORRECT_DOSE_REWARD
+
+class EvalResults:
+    """
+    Class for encapsulating evaluation results
+    """
+    def __init__(self, models, num_iter=1):
+        """
+        Initialize EvalResults Class
+
+        """
+        self.regrets = [[[]for i in range(num_iter)] for j in range(len(models))]
+        self.mistakes = [[[] for i in range(num_iter)] for j in range(len(models))]
+        self.payoffs = [[[]for i in range(num_iter)] for j in range(len(models))]
+        self.conf_intervals = [[[]for i in range(num_iter)] for j in range(len(models))]
+
+    def log_results(self, model_idx, iter_idx, regrets, mistakes, payoffs, conf_intervals):
+        self.regrets[model_idx][iter_idx] = regrets
+        self.mistakes[model_idx][iter_idx] = mistakes
+        self.payoffs[model_idx][iter_idx] = payoffs
+        self.conf_intervals[model_idx][iter_idx] = conf_intervals
+
+    def write_to_file(self):
+        pass
+
+    def get_per_iter_mean_regret_for_model(self, model_idx, iter_idx):
+        """
+        Returns mean regret for the given model across the given iteration
+
+        :param model_idx: index of the model
+        :param iter_idx: index of the iteration
+        :return: mean regret for the given model across the given iteration
+        """
+        if self.regrets is None or model_idx < 0 or model_idx >= len(self.regrets) \
+                or iter_idx < 0 or iter_idx >= len(self.regrets[0]):
+            return None
+
+        return np.mean(self.regrets[model_idx][iter_idx])
+
+    def get_overall_mean_regret_for_model(self, model_idx):
+        """
+         Returns mean regret for the given model across all iterations
+
+         :param model_idx: index of the model
+         :return: mean regret for the given model across all iterations
+         """
+        if self.regrets is None or model_idx < 0 or model_idx >= len(self.regrets):
+            return None
+
+        return np.mean([self.get_per_iter_mean_regret_for_model(model_idx, i)
+                        for i in range(len(self.regrets[model_idx]))])
+
+    def get_per_iter_err_rate_for_model(self, model_idx, iter_idx):
+        """
+        Returns error rate for the given model across the given iteration
+
+        :param model_idx: index of the model
+        :param iter_idx: index of the iteration
+        :return: error rate for the given model across the given iteration
+        """
+        if self.mistakes is None or model_idx < 0 or model_idx >= len(self.mistakes) \
+                or iter_idx < 0 or iter_idx >= len(self.mistakes[0]):
+            return None
+
+        return np.mean(self.mistakes[model_idx][iter_idx])
+
+    def get_overall_err_rate_for_model(self, model_idx):
+        """
+        Returns error rate for the given model across all iterations
+
+        :param model_idx: index of the model
+        :return: error rate for the given model across all iterations
+        """
+        if self.mistakes is None or model_idx < 0 or model_idx >= len(self.mistakes):
+            return None
+
+        return np.mean([self.get_per_iter_err_rate_for_model(model_idx, i)
+                        for i in range(len(self.mistakes[model_idx]))])
 
 
 def plot(model, all_regrets, all_payoffs, all_conf_intervals):
-
+    """
+    TODO: Replace this with plot_combined
+    :param model:
+    :param all_regrets:
+    :param all_payoffs:
+    :param all_conf_intervals:
+    :return:
+    """
     if all_regrets is not None:
         export_plot(np.mean(all_regrets, axis=0), "Regrets", model.config.algo_name, model.config.regret_plot_output)
 
@@ -18,54 +101,94 @@ def plot(model, all_regrets, all_payoffs, all_conf_intervals):
         export_plot(np.mean(all_conf_intervals, axis=0), "Confidence Interval", model.config.algo_name, model.config.cfinterval_plot_output)
 
 
-def evaluate(patients, model, num_iter=1, verbose=False):
-    indices = np.arange(len(patients))
-    per_iter_regret = []
-    per_iter_incorrect_frac = []
+def plot_combined(results):
+    pass
+
+
+def shuffle_split_data_set(patients, trainset_ratio = 0.8):
+    data_set_size = len(patients)
+    training_set_size = math.ceil(data_set_size * trainset_ratio)
+    indices = np.arange(data_set_size)
+    np.random.shuffle(indices)
+    training_indices = indices[:training_set_size]
+    testing_indices = indices[training_set_size:]
+    return training_indices, testing_indices
+
+
+def run(patients, models, num_iter=1, trainset_ratio=0.8, verbose=False):
+
+    if patients is None or len(patients) == 0 or models is None or len(models) == 0 \
+            or num_iter < 1:
+        return
+
+    if trainset_ratio < 0: trainset_ratio = 0
+    elif trainset_ratio > 1: trainset_ratio = 1
 
     # log all data for plotting
-    all_regrets = np.full((num_iter, len(patients)), np.inf) if model.config.regret_plot_output is not None else None
-    all_payoffs = np.full((num_iter, len(patients)), -np.inf) if model.config.payoff_plot_output is not None else None
-    all_conf_intervals = np.zeros((num_iter, len(patients))) if model.config.cfinterval_plot_output is not None else None
+    training_results = EvalResults(models, num_iter) if trainset_ratio > 0 else None
+    testing_results = EvalResults(models, num_iter) if trainset_ratio < 1 else None
 
-    for iter in range(num_iter):
-        print_flush(".", end="")
-        model.reset()
+    # perform N-fold validation based on the provided training/testing split
+    # train the model on the training set then freeze the model to test on the testing set
+    for i in range(num_iter):
 
-        np.random.shuffle(indices)
-        regrets = []
-        incorrects = []
-        for index in indices:
-            patient = patients[index]
-            features = model.get_features(patient)
-            if features is None:
-                continue
-            label = patient.properties[DOSE]
+        training_indices, testing_indices = shuffle_split_data_set(patients, trainset_ratio)
 
-            action, payoff, conf_interval = model.recommend(patient)
-            reward = get_reward(action, label)
-            model.update(action, features, reward)
+        for m in range(len(models)):
 
-            regret = get_reward(label, label) - reward
-            regrets.append(regret)
-            incorrects.append(0 if action == label else 1)
+            model = models[m]
+            model.reset()
 
-            # log regret, estimated payoff & its confidence interval
-            if all_regrets is not None:
-                all_regrets[iter][index] = regret
-            if all_payoffs is not None:
-                all_payoffs[iter][index] = payoff
-            if all_conf_intervals is not None:
-                all_conf_intervals[iter][index] = conf_interval
+            # training on the training set
+            if trainset_ratio > 0:
+                if verbose:
+                    print(f"Training Iteration: {i}, model: {model.config.algo_name}")
 
-        if verbose:
-            print("Iteration", iter, "regret:", np.mean(regrets))
+                training_regrets, training_mistakes, training_payoffs, training_conf_intervals = \
+                    model.run(patients, training_indices, is_training=True)
+                # log training regret, estimated payoff & its confidence interval
+                training_results.log_results(m, i, training_regrets, training_mistakes,
+                                             training_payoffs, training_conf_intervals)
 
-        per_iter_regret.append(np.mean(regrets))
-        per_iter_incorrect_frac.append(np.mean(incorrects))
+                if verbose:
+                    print(f"mean regret: {training_results.get_per_iter_mean_regret_for_model(m, i)}, "
+                          f"accuracy: {1 - training_results.get_per_iter_err_rate_for_model(m, i)}")
 
-    model.plot()
-    plot(model, all_regrets, all_payoffs, all_conf_intervals)
-    print_flush("")
+            # testing on the test set with the model params frozen
+            if trainset_ratio < 1:
+                if verbose:
+                    print(f"Testing Iteration: {i}, model: {model.config.algo_name}")
 
-    return np.mean(per_iter_regret), np.mean(per_iter_incorrect_frac)
+                testing_regrest, testing_mistakes, testing_payoffs, testing_conf_intervals = \
+                    model.run(patients, testing_indices, is_training=False)
+                # log testing regret, estimated payoff & its confidence interval
+                testing_results.log_results(m, i, testing_regrest, testing_mistakes,
+                                            testing_payoffs, testing_conf_intervals)
+
+                if verbose:
+                    print(f"mean regret: {testing_results.get_per_iter_mean_regret_for_model(m, i)}, "
+                          f"accuracy: {1 - testing_results.get_per_iter_err_rate_for_model(m, i)}")
+
+    if trainset_ratio > 0:
+        training_results.write_to_file()
+
+    if trainset_ratio < 1:
+        testing_results.write_to_file()
+
+    plot_combined(testing_results)
+
+    if verbose:
+        print("------------------------\n[SUMMARY OF THE RUN]")
+        if trainset_ratio > 0:
+            print(f"------------------------\nTraining: {trainset_ratio * 100}% patients")
+            for m in range(len(models)):
+                print(f"model: {models[m].config.algo_name}, "
+                      f"mean regret: {training_results.get_overall_mean_regret_for_model(m)}, "
+                      f"accuracy: {1 - training_results.get_overall_err_rate_for_model(m)}")
+        if trainset_ratio < 1:
+            print(f"------------------------\nTesting: {(1 - trainset_ratio) * 100}% patients")
+            for m in range(len(models)):
+                print(f"model: {models[m].config.algo_name}, "
+                      f"mean regret: {testing_results.get_overall_mean_regret_for_model(m)}, "
+                      f"accuracy: {1 - testing_results.get_overall_err_rate_for_model(m)}")
+

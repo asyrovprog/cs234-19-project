@@ -4,6 +4,36 @@ from feature import *
 from util import *
 
 
+def feature_scaling(min, max, value):
+    """
+    Perform Min-Max Scaling on the given value based on the provided min and max range
+
+    :param min: minimum value
+    :param max: maximum value
+    :param value: actual value
+    :return:
+    """
+    scaled = VAL_UNKNOWN
+    if value is not None and min is not None and max is not None and max > min:
+        scaled = (value - min) / (max - min)
+    return scaled
+
+
+def get_bmi(height, weight):
+    """
+    Calculate Body Mass Index (BMI) for the given height and weight
+    formula: weight (kg) / height^2 (m)
+
+    :param height: height in cm
+    :param weight: weight in kg
+    :return:
+    """
+    bmi = VAL_UNKNOWN
+    if height is not None and weight is not None and height > 0 and weight > 0:
+        bmi = weight * 10000 / (height ** 2)
+    return bmi
+
+
 def get_one_hot(enum_value):
     """
     Convert enum value into one hot vector
@@ -18,6 +48,17 @@ def get_one_hot(enum_value):
         results[enum_list.index(enum_value)] = 1
     return results
 
+
+def get_one_hot_from_list(enum_value_list):
+    results = []
+    if enum_value_list is not None and len(enum_value_list) > 0:
+        enum_type = type(enum_value_list[0])
+        results = [0] * len(enum_type)
+        enum_list = list(enum_type)
+        for enum_value in enum_value_list:
+            if enum_value in enum_list:
+                results[enum_list.index(enum_value)] = 1
+    return results
 
 
 def parse_dose(d):

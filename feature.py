@@ -99,8 +99,8 @@ class Race(enum.Enum):
 class AgeGroup(enum.Enum):
     """
     field name: 'Age'
-    unique values: '40 - 49', '80 - 89', '60 - 69', '70 - 79', '90+',
-        '50 - 59', nan, '20 - 29', '30 - 39', '19-Oct'
+    unique values: '60 - 69', '50 - 59', '40 - 49', '70 - 79', '30 - 39', '80 - 89',
+       '90+', '20 - 29', '10 - 19', nan
     """
     unknown = VAL_UNKNOWN
     zero = 0

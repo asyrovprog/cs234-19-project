@@ -6,13 +6,13 @@ from fixed_dose import *
 from clinical_dose import *
 from lin_ucb import *
 from patient import *
-from tree_heuristic import *
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--algo", required=True, type=str,
-                    choices=["fixed_dose", "clinical_dose", "linucb_disjoint",
-                             "tree_heuristics"])
+                    choices=ALGOS + ["all"])
+parser.add_argument("--iter", required=False, type=int)
+parser.add_argument("--train_ratio", required=False, type=float)
 
 
 def get_recommender(algo):
@@ -24,8 +24,6 @@ def get_recommender(algo):
         model = ClinicalDoseRecommender(ConfigClinicalDose())
     elif algo == "linucb_disjoint":
         model = LinUCBDisjointRecommender(ConfigLinUCBDisjoint())
-    elif algo == "tree_heuristics":
-        model = TreeHeuristicRecommender(ConfigTreeHeuristic())
 
     return model
 
@@ -48,7 +46,7 @@ def parse_all_records(records, keep_missing=True):
 
 
 def load_data():
-    raw_data = csv.DictReader(open("data/warfarin_5528.csv"))
+    raw_data = csv.DictReader(open("data/warfarin.csv"))
     return parse_all_records(raw_data)
 
 
@@ -56,9 +54,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     patients = load_data()
-    model = get_recommender(args.algo)
+    models = []
+    if args.algo == "all":  # run all models
+        models += [get_recommender(algo) for algo in ALGOS]
+    else:   # run single model
+        models += [get_recommender(args.algo)]
 
-    regret, incorrect_frac = evaluation.evaluate(patients, model, 10)
-    accuracy = 1 - incorrect_frac
-    print(f"[{model.config.algo_name}] regret={regret}; incorrect fraction={incorrect_frac}, accuracy={accuracy}")
+    iters = args.iter if args.iter else 1
+    train_ratio = args.train_ratio if args.train_ratio else 0.8
 
+    evaluation.run(patients, models, iters, train_ratio, verbose=True)
