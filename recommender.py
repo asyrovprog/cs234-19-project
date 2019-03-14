@@ -64,3 +64,9 @@ class Recommender(object):
         """
         pass
 
+    def plot(self):
+        """
+        Called when last iteration is finished. May be used for output extra charts
+        """
+        pass
+

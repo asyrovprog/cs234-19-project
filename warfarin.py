@@ -6,11 +6,13 @@ from fixed_dose import *
 from clinical_dose import *
 from lin_ucb import *
 from patient import *
+from tree_heuristic import *
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--algo", required=True, type=str,
-                    choices=["fixed_dose", "clinical_dose", "linucb_disjoint"])
+                    choices=["fixed_dose", "clinical_dose", "linucb_disjoint",
+                             "tree_heuristics"])
 
 
 def get_recommender(algo):
@@ -22,6 +24,8 @@ def get_recommender(algo):
         model = ClinicalDoseRecommender(ConfigClinicalDose())
     elif algo == "linucb_disjoint":
         model = LinUCBDisjointRecommender(ConfigLinUCBDisjoint())
+    elif algo == "tree_heuristics":
+        model = TreeHeuristicRecommender(ConfigTreeHeuristic())
 
     return model
 
@@ -54,7 +58,7 @@ if __name__ == '__main__':
     patients = load_data()
     model = get_recommender(args.algo)
 
-    regret, incorrect_frac = evaluation.evaluate(patients, model, 50)
+    regret, incorrect_frac = evaluation.evaluate(patients, model, 10)
     accuracy = 1 - incorrect_frac
     print(f"[{model.config.algo_name}] regret={regret}; incorrect fraction={incorrect_frac}, accuracy={accuracy}")
 

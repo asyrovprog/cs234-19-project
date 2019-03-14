@@ -93,6 +93,16 @@ def export_plot(ys, ylabel, title, filename):
     plt.savefig(filename)
     plt.close()
 
+#
+# https://math.stackexchange.com/questions/102978/incremental-computation-of-standard-deviation
+#
+def variance_update(prev_s2, n, prev_mu, x_n):
+    s2 = ((n - 2)/(n - 1))*prev_s2  if n > 2 else 0
+    s2 += (1/n) * pow((x_n - prev_mu), 2)
+    return s2
+
+def mean_update(prev_mu, n, x_n):
+    return (1/n)*(x_n + (n - 1)*prev_mu)
 
 def print_flush(s, end='\n'):
     print(s, end=end)

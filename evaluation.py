@@ -64,6 +64,7 @@ def evaluate(patients, model, num_iter=1, verbose=False):
         per_iter_regret.append(np.mean(regrets))
         per_iter_incorrect_frac.append(np.mean(incorrects))
 
+    model.plot()
     plot(model, all_regrets, all_payoffs, all_conf_intervals)
     print_flush("")
 
