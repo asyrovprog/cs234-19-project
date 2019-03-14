@@ -57,6 +57,21 @@ class ConfigLinUCBDisjoint(ConfigCommon):
         self.feature_count = 134  # this must match actual feature count
 
 
+class ConfigTreeHeuristic:
+
+    def __init__(self):
+        self.algo_name = "TreeHeuristic"
+
+        # output config
+        self.output_path = "results/{}/".format(self.algo_name)
+        self.log_path = self.output_path + "log.txt"
+        self.regret_plot_output = self.output_path + "regret.png"
+        self.payoff_plot_output = self.output_path + "payoff.png"
+        self.cfinterval_plot_output = self.output_path + "cfinterval.png"
+
+        self.num_arms = 3
+        self.tree_depth = 3
+
 def get_config(algo_name):
     if algo_name == "fixed_dose":
         return ConfigFixedDose()
@@ -64,3 +79,5 @@ def get_config(algo_name):
         return ConfigClinicalDose()
     elif algo_name == "linucb_disjoint":
         return ConfigLinUCBDisjoint()
+    elif algo_name == "tree_heuristics":
+        return ConfigTreeHeuristic()
