@@ -75,6 +75,7 @@ $ python warfarin.py --algo=all --iter=10 --train_ratio=0.7
 - [X] alternate learning/evaluation approach
 - [X] explore feature normalization
 - [X] add new feature (BMI instead of height/weight? INR data?)
+- [X] implement LinUCBDisjointBasic to use same feature set as ClinicalDose
 - [ ] variations of LinUCB (hybrid, SupLin?)
 - [X] implement Tree Heuristic bandit
 - [ ] implement Lasso bandit

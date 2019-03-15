@@ -25,6 +25,8 @@ def get_recommender(algo):
         model = ClinicalDoseRecommender(ConfigClinicalDose())
     elif algo == "linucb_disjoint":
         model = LinUCBDisjointRecommender(ConfigLinUCBDisjoint())
+    elif algo == "linucb_disjoint_basic":
+        model = LinUCBDisjointBasicRecommender(ConfigLinUCBDisjointBasic())
     elif algo == "tree_heuristics":
         model = TreeHeuristicRecommender(ConfigTreeHeuristic())
     return model

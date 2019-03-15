@@ -86,4 +86,4 @@ VKORC1_GENO_FEATURES = [VKORC1_1639, VKORC1_497, VKORC1_1173, VKORC1_1542,
 
 
 # command line options for algorithms
-ALGOS = ["fixed_dose", "clinical_dose", "linucb_disjoint", "tree_heuristics"]
+ALGOS = ["fixed_dose", "clinical_dose", "linucb_disjoint", "linucb_disjoint_basic", "tree_heuristics"]
