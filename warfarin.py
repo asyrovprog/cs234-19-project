@@ -5,6 +5,7 @@ from config import *
 from fixed_dose import *
 from clinical_dose import *
 from lin_ucb import *
+from tree_heuristic import *
 from patient import *
 
 
@@ -24,7 +25,8 @@ def get_recommender(algo):
         model = ClinicalDoseRecommender(ConfigClinicalDose())
     elif algo == "linucb_disjoint":
         model = LinUCBDisjointRecommender(ConfigLinUCBDisjoint())
-
+    elif algo == "tree_heuristics":
+        model = TreeHeuristicRecommender(ConfigTreeHeuristic())
     return model
 
 
@@ -57,10 +59,10 @@ if __name__ == '__main__':
     models = []
     if args.algo == "all":  # run all models
         models += [get_recommender(algo) for algo in ALGOS]
-    else:   # run single model
+    else:   # run a single model
         models += [get_recommender(args.algo)]
 
     iters = args.iter if args.iter else 1
-    train_ratio = args.train_ratio if args.train_ratio else 0.8
+    train_ratio = args.train_ratio if args.train_ratio is not None else 0.8
 
     evaluation.run(patients, models, iters, train_ratio, verbose=True)

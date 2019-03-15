@@ -1,8 +1,7 @@
 import logging
-import re
-import matplotlib
 import sys
-
+import csv
+import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from constant import *
@@ -21,19 +20,6 @@ def clean_value(s):
     elif isinstance(s, str):
         result = s.strip().lower()
     return result
-
-
-def get_age_decades(s):
-    match = re.match(r'^\s*(\d+)\s*[-+].*', s.strip())
-    if match:
-        try:
-            age = int(match.group(1))
-            age = age // 10
-        except ValueError:
-            age = VAL_UNKNOWN
-        return age
-    else:
-        return VAL_UNKNOWN
 
 
 def get_float(s):
@@ -75,6 +61,19 @@ def get_logger(filename):
     handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s: %(message)s'))
     logging.getLogger().addHandler(handler)
     return logger
+
+
+def export_stats_list(stats_list, filename):
+    """
+    Export a stats list to a file
+
+    Args:
+        stats_list: (list) of stats in float / int
+        filename: (string) directory
+    """
+    with open(filename, 'w') as f:
+        writer = csv.writer(f)
+        writer.writerows(stats_list)
 
 
 def export_plot(ys, ylabel, title, filename):

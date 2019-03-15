@@ -14,12 +14,10 @@ class Recommender(object):
                 config: class with hyperparameters
                 logger: logger instance from the logging module
         """
-        # directory for training outputs
-        if not os.path.exists(config.output_path):
-          os.makedirs(config.output_path)
-
-        # store hyperparameters
         self.config = config
+        # directory for outputs
+        if not os.path.exists(self.config.output_path):
+          os.makedirs(self.config.output_path)
         self.logger = logger
         if logger is None:
           self.logger = get_logger(config.log_path)
@@ -98,7 +96,9 @@ class Recommender(object):
             regret = self.get_reward(label, label) - reward
             regrets.append(regret)
             mistakes.append(0 if action == label else 1)
-            payoffs.append(payoff)
-            conf_intervals.append(conf_interval)
+            if payoff is not None:
+                payoffs.append(payoff)
+            if conf_interval is not None:
+                conf_intervals.append(conf_interval)
 
         return regrets, mistakes, payoffs, conf_intervals
