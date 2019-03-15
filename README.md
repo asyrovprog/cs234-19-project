@@ -76,6 +76,7 @@ $ python warfarin.py --algo=all --iter=10 --train_ratio=0.7
 - [X] explore feature normalization
 - [X] add new feature (BMI instead of height/weight? INR data?)
 - [ ] variations of LinUCB (hybrid, SupLin?)
+- [X] implement Tree Heuristic bandit
 - [ ] implement Lasso bandit
 - [X] export training and testing results to file
 - [ ] create combined plots
