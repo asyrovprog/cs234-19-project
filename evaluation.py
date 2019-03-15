@@ -1,6 +1,7 @@
 # Utility functions for evaluation.
 import numpy as np
 import math
+from config import *
 from util import *
 
 
@@ -8,11 +9,13 @@ class EvalResults:
     """
     Class for encapsulating evaluation results
     """
-    def __init__(self, models, num_iter=1):
+    def __init__(self, is_training, models, num_iter=1):
         """
         Initialize EvalResults Class
 
         """
+        self.is_training = is_training
+        self.models = models
         self.regrets = [[[]for i in range(num_iter)] for j in range(len(models))]
         self.mistakes = [[[] for i in range(num_iter)] for j in range(len(models))]
         self.payoffs = [[[]for i in range(num_iter)] for j in range(len(models))]
@@ -24,8 +27,19 @@ class EvalResults:
         self.payoffs[model_idx][iter_idx] = payoffs
         self.conf_intervals[model_idx][iter_idx] = conf_intervals
 
-    def write_to_file(self):
-        pass
+    def export_results(self):
+        for m in range(len(self.models)):
+            model_config = self.models[m].config
+            export_stats_list(self.regrets[m],
+                              model_config.get_regret_filename(model_config.algo_name, self.is_training))
+            export_stats_list(self.mistakes[m],
+                              model_config.get_mistake_filename(model_config.algo_name, self.is_training))
+            if self.payoffs[m][0] is not None and len(self.payoffs[m][0]) > 0:
+                export_stats_list(self.payoffs[m],
+                                  model_config.get_payoff_filename(model_config.algo_name, self.is_training))
+            if self.conf_intervals[m][0] is not None and len(self.conf_intervals[m][0]) > 0:
+                export_stats_list(self.conf_intervals[m],
+                                  model_config.get_conf_interval_filename(model_config.algo_name, self.is_training))
 
     def get_per_iter_mean_regret_for_model(self, model_idx, iter_idx):
         """
@@ -125,8 +139,8 @@ def run(patients, models, num_iter=1, trainset_ratio=0.8, verbose=False):
     elif trainset_ratio > 1: trainset_ratio = 1
 
     # log all data for plotting
-    training_results = EvalResults(models, num_iter) if trainset_ratio > 0 else None
-    testing_results = EvalResults(models, num_iter) if trainset_ratio < 1 else None
+    training_results = EvalResults(True, models, num_iter) if trainset_ratio > 0 else None
+    testing_results = EvalResults(False, models, num_iter) if trainset_ratio < 1 else None
 
     # perform N-fold validation based on the provided training/testing split
     # train the model on the training set then freeze the model to test on the testing set
@@ -173,10 +187,10 @@ def run(patients, models, num_iter=1, trainset_ratio=0.8, verbose=False):
     model.plot()
 
     if trainset_ratio > 0:
-        training_results.write_to_file()
+        training_results.export_results()
 
     if trainset_ratio < 1:
-        testing_results.write_to_file()
+        testing_results.export_results()
 
     plot_combined(testing_results)
 
