@@ -57,6 +57,16 @@ class ConfigLinUCBDisjoint(ConfigCommon):
         self.feature_count = 134  # this must match actual feature count
 
 
+class ConfigLinUCBDisjointBasic(ConfigLinUCBDisjoint):
+
+    def __init__(self):
+        super().__init__()
+        self.algo_name = "LinUCBDisjointBasic"
+
+        # parameters for the model
+        self.feature_count = 9  # this must match actual feature count
+
+
 class ConfigTreeHeuristic(ConfigCommon):
 
     def __init__(self):
@@ -94,6 +104,8 @@ def get_config(algo_name):
         return ConfigClinicalDose()
     elif algo_name == "linucb_disjoint":
         return ConfigLinUCBDisjoint()
+    elif algo_name == "linucb_disjoint_basic":
+        return ConfigLinUCBDisjointBasic()
     elif algo_name == "tree_heuristics":
         return ConfigTreeHeuristic()
     elif algo_name == "lasso":

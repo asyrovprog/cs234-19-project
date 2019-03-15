@@ -117,3 +117,53 @@ class LinUCBDisjointRecommender(Recommender):
         return best_arm, best_payoff, best_conf_interval
 
 
+class LinUCBDisjointBasicRecommender(LinUCBDisjointRecommender):
+    """
+    Linear UCB with disjoint model using the same feature set as
+    Clinical_Dose model
+    """
+    def __init__(self, config):
+        """
+        Args:
+            alpha: regularization parameter.
+            d: number of features
+            num_arms: number of arms
+        """
+        super().__init__(config)
+        self.alpha = self.config.alpha
+        self.d = self.config.feature_count
+
+
+    def get_features(self, patient):
+        """
+        Algorithm-specific feature processing
+
+        :param patient: patient data
+        :return: feature vector for the given patient
+        """
+        # missing values, we can't apply the algorithm
+        if patient.properties[DOSE] == VAL_UNKNOWN or \
+            patient.properties[AGE].value == AgeGroup.unknown or \
+            patient.properties[HEIGHT] == VAL_UNKNOWN or \
+            patient.properties[WEIGHT] == VAL_UNKNOWN:
+            return None
+
+        enzyme = 1 if patient.properties[TEGRETOL] is BinaryFeature.true or \
+                      patient.properties[DILANTIN] is BinaryFeature.true or \
+                      patient.properties[RIFAMPIN] is BinaryFeature.true or \
+                      any(m in patient.properties[MEDICATIONS] for m in ["carbamazepine", "phenytoin", "rifampin",
+                                                                         "rifampicin"]) \
+                else 0
+
+        amiodarone = 1 if patient.properties[CORDARONE] is BinaryFeature.true or \
+                         "amiodarone" in patient.properties[MEDICATIONS] \
+                    else 0
+
+        features = [1, patient.properties[AGE].value, patient.properties[HEIGHT], patient.properties[WEIGHT],
+                    1 if patient.properties[RACE] is Race.asian else 0,
+                    1 if patient.properties[RACE] is Race.black else 0,
+                    1 if patient.properties[RACE] is Race.unknown else 0,
+                    enzyme, amiodarone]
+
+        return np.array(features)
+
