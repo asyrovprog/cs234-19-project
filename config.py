@@ -70,6 +70,23 @@ class ConfigTreeHeuristic(ConfigCommon):
         self.alternative_features = True
 
 
+class ConfigLasso(ConfigCommon):
+
+    def __init__(self):
+        super().__init__()
+        self.algo_name = "Lasso"
+
+        self.num_arms = 3
+        # At the beginning we force sample each arm 20 times and this will be the only
+        # time we force sample.
+        self.q = 20
+        self.n = 1
+        # Include all arms..
+        self.h = 10
+        self.lambda1 = 1.0
+        self.lambda2 = 1.0
+
+
 def get_config(algo_name):
     if algo_name == "fixed_dose":
         return ConfigFixedDose()
@@ -79,3 +96,5 @@ def get_config(algo_name):
         return ConfigLinUCBDisjoint()
     elif algo_name == "tree_heuristics":
         return ConfigTreeHeuristic()
+    elif algo_name == "lasso":
+        return ConfigLasso()
