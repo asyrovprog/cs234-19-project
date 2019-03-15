@@ -17,10 +17,39 @@ LABEL_FAILED = 1
 #
 class TreeHeuristicRecommender(Recommender):
 
-    def get_features(self, patient):
+    def get_features0(self, patient):
+
         if patient.properties[AGE].value == AgeGroup.unknown or \
             patient.properties[HEIGHT] == VAL_UNKNOWN or \
-            patient.properties[WEIGHT] == VAL_UNKNOWN:
+            patient.properties[WEIGHT] == VAL_UNKNOWN or \
+            patient.properties[DOSE] == VAL_UNKNOWN:
+            return None
+
+        enzyme = 1 if patient.properties[TEGRETOL] is BinaryFeature.true or \
+                      patient.properties[DILANTIN] is BinaryFeature.true or \
+                      patient.properties[RIFAMPIN] is BinaryFeature.true or \
+                      any(m in patient.properties[MEDICATIONS] for m in ["carbamazepine", "phenytoin", "rifampin", "rifampicin"]) \
+            else 0
+
+        amiodarone = 1 if patient.properties[CORDARONE] is BinaryFeature.true or "amiodarone" in patient.properties[MEDICATIONS] \
+            else 0
+
+        features = [patient.properties[AGE].value, patient.properties[HEIGHT], patient.properties[WEIGHT],
+                    1 if patient.properties[RACE] is Race.asian else 0,
+                    1 if patient.properties[RACE] is Race.black else 0,
+                    1 if patient.properties[RACE] is Race.unknown else 0,
+                    enzyme, amiodarone]
+
+        if self.feature_names is None:
+            self.feature_names = [AGE, HEIGHT, WEIGHT, "Asia", "Africa", "Other", "Enzyme", "Amiodarone"]
+
+        return np.array(features)
+
+    def get_features1(self, patient):
+        if patient.properties[AGE].value == AgeGroup.unknown or \
+            patient.properties[HEIGHT] == VAL_UNKNOWN or \
+            patient.properties[WEIGHT] == VAL_UNKNOWN or \
+            patient.properties[DOSE] == VAL_UNKNOWN:
             return None
 
         features = [patient.properties[AGE].value, patient.properties[HEIGHT],
@@ -29,7 +58,18 @@ class TreeHeuristicRecommender(Recommender):
         features += get_one_hot(patient.properties[RACE])  # size: 5
         features += get_one_hot(patient.properties[VKORC1_1639])  # size: 4
 
+        if self.feature_names is None:
+            self.feature_names = [AGE, HEIGHT, WEIGHT,
+                                  "Gender[0]", "Gender[1]", "Gender[2]",
+                                  "Race[0]", "Race[1]", "Race[2]", "Race[3]", "Race[4]",
+                                  "VKORC1[0]", "VKORC1[1]", "VKORC1[2]", "VKORC1[3]"]
+
         return np.array(features)
+
+    def get_features(self, patient):
+        if self.config.alternative_features:
+            return self.get_features1(patient)
+        return self.get_features0(patient)
 
     def __init__(self, config):
         super().__init__(config)
@@ -37,10 +77,7 @@ class TreeHeuristicRecommender(Recommender):
         self.num_arms = self.config.num_arms
         self.action_trees = []
 
-        self.feature_names = [AGE, HEIGHT, WEIGHT,
-          "Gender[0]", "Gender[1]", "Gender[2]",
-          "Race[0]", "Race[1]", "Race[2]", "Race[3]", "Race[4]",
-          "VKORC1[0]", "VKORC1[1]", "VKORC1[2]", "VKORC1[3]"]
+        self.feature_names = None
 
         self.S_0 = []           # default success count (usually 1 for each arm)
         self.F_0 = []           # default failure count (usually 1 for each arm)
@@ -51,9 +88,11 @@ class TreeHeuristicRecommender(Recommender):
         self.iter_item_id = 0
         self.num_correct = 0
 
-        self.reset()
         self.plot_mean = []
         self.plot_variance = []
+        self.prev_iter = 0
+
+        self.reset()
 
     def reset(self):
         # we could change this to preffer med dosage
@@ -68,7 +107,7 @@ class TreeHeuristicRecommender(Recommender):
         # successes and failures (so our label is binary)
         self.action_trees = [None for _ in range(self.num_arms)]
 
-        self.iter += 1
+        self.iter = 0
         self.iter_item_id = 0
         self.num_correct = 0
 
@@ -132,7 +171,7 @@ class TreeHeuristicRecommender(Recommender):
         unfortunately significantly slows down training, because we have to
         rebuild action tree on each update.
         """
-        self.action_trees[arm] = tree.DecisionTreeClassifier(max_depth = self.config.tree_depth)
+        self.action_trees[arm] = tree.DecisionTreeClassifier(criterion = self.config.criterion, max_depth = self.config.tree_depth)
         self.action_trees[arm].fit(self.Dta_x[arm], self.Dta_y[arm])
 
     def update(self, arm, x_t, reward):
@@ -151,12 +190,12 @@ class TreeHeuristicRecommender(Recommender):
             self.plot_mean.append(accuracy)
             self.plot_variance.append(0.0)
         else:
-            n, id = self.iter + 1, self.iter_item_id
-            prev_mu = self.plot_mean[id]
-            prev_s2 = self.plot_variance[id]
+            n, idx = self.iter + 1, self.iter_item_id
+            prev_mu = self.plot_mean[idx]
+            prev_s2 = self.plot_variance[idx]
 
-            self.plot_mean[id] = mean_update(prev_mu, n, accuracy)
-            self.plot_variance[id] = variance_update(prev_s2, n, prev_mu, accuracy)
+            self.plot_mean[idx] = mean_update(prev_mu, n, accuracy)
+            self.plot_variance[idx] = variance_update(prev_s2, n, prev_mu, accuracy)
 
         self.iter_item_id += 1
 
@@ -166,6 +205,5 @@ class TreeHeuristicRecommender(Recommender):
                  filled=True,
                  out_file=self.config.output_path + "tree_arm_" + str(a) + ".dot",
                  feature_names=self.feature_names)
-        fill_plot(self.plot_mean[30:], self.plot_variance[30:],
-                  self.config.output_path + "accuracy.png", "DecisionTree-Beta")
+        fill_plot(self.plot_mean[20:], self.plot_variance[20:], self.config.output_path + "result.png", "DecisionTree-Beta")
 

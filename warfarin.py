@@ -6,6 +6,7 @@ from fixed_dose import *
 from clinical_dose import *
 from lin_ucb import *
 from patient import *
+from tree_heuristic import *
 
 
 parser = argparse.ArgumentParser()
@@ -24,6 +25,8 @@ def get_recommender(algo):
         model = ClinicalDoseRecommender(ConfigClinicalDose())
     elif algo == "linucb_disjoint":
         model = LinUCBDisjointRecommender(ConfigLinUCBDisjoint())
+    elif algo == "tree_heuristics":
+        model = TreeHeuristicRecommender(ConfigTreeHeuristic())
 
     return model
 

@@ -61,7 +61,9 @@ class ConfigTreeHeuristic:
         self.cfinterval_plot_output = self.output_path + "cfinterval.png"
 
         self.num_arms = 3
-        self.tree_depth = 3
+        self.tree_depth = 4
+        self.criterion = "gini"
+        self.alternative_features = True
 
 def get_config(algo_name):
     if algo_name == "fixed_dose":
