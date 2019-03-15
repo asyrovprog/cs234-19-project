@@ -183,6 +183,9 @@ def run(patients, models, num_iter=1, trainset_ratio=0.8, verbose=False):
                     print(f"mean regret: {testing_results.get_per_iter_mean_regret_for_model(m, i)}, "
                           f"accuracy: {1 - testing_results.get_per_iter_err_rate_for_model(m, i)}")
 
+    # plot model specific charts
+    model.plot()
+
     if trainset_ratio > 0:
         training_results.export_results()
 

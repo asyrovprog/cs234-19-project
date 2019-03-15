@@ -78,7 +78,7 @@ $ python warfarin.py --algo=all --iter=10 --train_ratio=0.7
 - [X] implement LinUCBDisjointBasic to use same feature set as ClinicalDose
 - [ ] variations of LinUCB (hybrid, SupLin?)
 - [X] implement Tree Heuristic bandit
-- [ ] implement Lasso bandit
+- [X] implement Lasso bandit
 - [X] export training and testing results to file
 - [ ] create combined plots
 - [ ] experiment with LinUCB's hyperparameter alpha value?

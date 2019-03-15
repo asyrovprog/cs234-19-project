@@ -7,6 +7,7 @@ from clinical_dose import *
 from lin_ucb import *
 from tree_heuristic import *
 from patient import *
+from lasso_bandit import *
 
 
 parser = argparse.ArgumentParser()
@@ -29,6 +30,8 @@ def get_recommender(algo):
         model = LinUCBDisjointBasicRecommender(ConfigLinUCBDisjointBasic())
     elif algo == "tree_heuristics":
         model = TreeHeuristicRecommender(ConfigTreeHeuristic())
+    elif algo == "lasso":
+        model = LassoBandit(ConfigLasso())
     return model
 
 
