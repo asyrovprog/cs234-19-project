@@ -57,20 +57,16 @@ class ConfigLinUCBDisjoint(ConfigCommon):
         self.feature_count = 134  # this must match actual feature count
 
 
-class ConfigTreeHeuristic:
+class ConfigTreeHeuristic(ConfigCommon):
 
     def __init__(self):
+        super().__init__()
         self.algo_name = "TreeHeuristic"
 
-        # output config
-        self.output_path = "results/{}/".format(self.algo_name)
-        self.log_path = self.output_path + "log.txt"
-        self.regret_plot_output = self.output_path + "regret.png"
-        self.payoff_plot_output = self.output_path + "payoff.png"
-        self.cfinterval_plot_output = self.output_path + "cfinterval.png"
-
+        # parameters for the model
         self.num_arms = 3
         self.tree_depth = 3
+
 
 def get_config(algo_name):
     if algo_name == "fixed_dose":

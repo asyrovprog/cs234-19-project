@@ -5,6 +5,7 @@ from config import *
 from fixed_dose import *
 from clinical_dose import *
 from lin_ucb import *
+from tree_heuristic import *
 from patient import *
 
 
@@ -24,7 +25,8 @@ def get_recommender(algo):
         model = ClinicalDoseRecommender(ConfigClinicalDose())
     elif algo == "linucb_disjoint":
         model = LinUCBDisjointRecommender(ConfigLinUCBDisjoint())
-
+    elif algo == "tree_heuristics":
+        model = TreeHeuristicRecommender(ConfigTreeHeuristic())
     return model
 
 
