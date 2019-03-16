@@ -84,6 +84,14 @@ class LassoBandit(Recommender):
         lasso.fit(X, y)
         return lasso
 
+    def check_patient_record(self, patient):
+        if patient.properties[AGE].value == AgeGroup.unknown or \
+            patient.properties[HEIGHT] == VAL_UNKNOWN or \
+            patient.properties[WEIGHT] == VAL_UNKNOWN or \
+            patient.properties[DOSE] == VAL_UNKNOWN:
+            return False
+        return True
+
     def get_features(self, patient):
         """
         Algorithm-specific feature processing
@@ -91,6 +99,9 @@ class LassoBandit(Recommender):
         :param patient: patient data
         :return: feature vector for the given patient
         """
+
+        if not self.check_patient_record(patient):
+            return None
 
         features = [1, patient.properties[AGE].value, patient.properties[HEIGHT],
                     patient.properties[WEIGHT]]  # size: 3
