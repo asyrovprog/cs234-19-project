@@ -7,9 +7,6 @@ class ConfigCommon:
         # output config
         self.output_path = "results/{}/".format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
         self.log_path = self.output_path + "log.txt"
-        self.regret_plot_output = self.output_path + "regret.png"
-        self.payoff_plot_output = self.output_path + "payoff.png"
-        self.cfinterval_plot_output = self.output_path + "cfinterval.png"
 
     def get_regret_filename(self, model, is_training):
         s = "training" if is_training else "testing"
@@ -94,6 +91,7 @@ class ConfigTreeHeuristicUCB(ConfigTreeHeuristic):
         self.alternative_features = True
         self.mode = "UCB"
 
+
 class ConfigTreeHeuristicBasicUCB(ConfigTreeHeuristic):
 
     def __init__(self):
@@ -101,6 +99,7 @@ class ConfigTreeHeuristicBasicUCB(ConfigTreeHeuristic):
         self.algo_name = "DTree-Basic-UCB"
         self.alternative_features = False
         self.mode = "UCB"
+
 
 class ConfigLasso(ConfigCommon):
 

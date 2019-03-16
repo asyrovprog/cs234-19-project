@@ -96,29 +96,6 @@ class EvalResults:
                         for i in range(len(self.mistakes[model_idx]))])
 
 
-def plot(model, all_regrets, all_payoffs, all_conf_intervals):
-    """
-    TODO: Replace this with plot_combined
-    :param model:
-    :param all_regrets:
-    :param all_payoffs:
-    :param all_conf_intervals:
-    :return:
-    """
-    if all_regrets is not None:
-        export_plot(np.mean(all_regrets, axis=0), "Regrets", model.config.algo_name, model.config.regret_plot_output)
-
-    if all_payoffs is not None:
-        export_plot(np.mean(all_payoffs, axis=0), "Estimated Payoff", model.config.algo_name, model.config.payoff_plot_output)
-
-    if all_conf_intervals is not None:
-        export_plot(np.mean(all_conf_intervals, axis=0), "Confidence Interval", model.config.algo_name, model.config.cfinterval_plot_output)
-
-
-def plot_combined(results):
-    pass
-
-
 def shuffle_split_data_set(patients, trainset_ratio = 0.8):
     data_set_size = len(patients)
     training_set_size = math.ceil(data_set_size * trainset_ratio)
@@ -185,16 +162,11 @@ def run(patients, models, num_iter=1, trainset_ratio=0.8, verbose=False):
                     print(f"mean regret: {testing_results.get_per_iter_mean_regret_for_model(m, i)}, "
                           f"accuracy: {1 - testing_results.get_per_iter_err_rate_for_model(m, i)}")
 
-    # plot model specific charts
-    model.plot()
-
     if trainset_ratio > 0:
         training_results.export_results()
 
     if trainset_ratio < 1:
         testing_results.export_results()
-
-    plot_combined(testing_results)
 
     if verbose:
         print("------------------------\n[SUMMARY OF THE RUN]")
