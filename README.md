@@ -16,6 +16,7 @@
 - `fixed_dose.py` - subclass of `Recommender` with implementation of fixed dose algorithm
 - `lin_ucb.py` - subclass of `Recommender` with implementation of LinUCB algorithms (disjoint & hybrid).
 - `patient.py` - encapsulate all info about a patient
+- `plot.py` - offline batch plotting utility to generate plots from a result set from a previous recommender run
 - `preprocess.py` - handles all pre-processing of the patient data
 - `recommender.py` - abstract `Recommender` class to represent a recommendation model
 - `requirements.txt` - for installing required libraries
