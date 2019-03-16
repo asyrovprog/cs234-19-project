@@ -28,10 +28,8 @@ def get_recommender(algo):
         model = LinUCBDisjointRecommender(ConfigLinUCBDisjoint())
     elif algo == "linucb_disjoint_basic":
         model = LinUCBDisjointBasicRecommender(ConfigLinUCBDisjointBasic())
-    elif algo == "tree_heuristics":
-        model = TreeHeuristicRecommender(ConfigTreeHeuristic())
-    elif algo == "tree_heuristics_basic":
-        model = TreeHeuristicRecommender(ConfigTreeHeuristicBasic())
+    elif algo.startswith("tree"):
+        model = TreeHeuristicRecommender(get_config(algo))
     elif algo == "lasso":
         model = LassoBandit(ConfigLasso())
     return model

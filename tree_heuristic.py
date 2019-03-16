@@ -2,6 +2,7 @@ from recommender import *
 from preprocess import *
 from sklearn import tree
 from plot_utils import *
+import math
 
 LABEL_SUCCESS = 0
 LABEL_FAILED = 1
@@ -109,14 +110,24 @@ class TreeHeuristicRecommender(Recommender):
         self.num_correct = 0
 
 
-    def sample_beta(self, params, arm):
+    def estimate_arm(self, params, arm):
         """
             Sample beta distrubution. params is (F, S) for
         X_arm ~ Beta(S_0[arm] + S, F_0[arm] + F)
         """
-        S = self.S_0[arm] + params[1]
-        F = self.F_0[arm] + params[0]
-        res = np.random.beta(S, F)
+        res = 0.0
+        if self.config.mode == "beta":
+            S = self.S_0[arm] + params[1]
+            F = self.F_0[arm] + params[0]
+            res = np.random.beta(S, F)
+        elif self.config.mode == "UCB":
+            S = params[1] + 1
+            F = params[0]
+            t = S + F
+            n_j = float(S + F)
+            mu = (S * CORRECT_DOSE_REWARD + F * INCORRECT_DOSE_REWARD) / n_j
+            res = mu + math.sqrt(2.0 * math.log(t / n_j))
+
         return res
 
     def query_distribution(self, a, x_t):
@@ -151,7 +162,7 @@ class TreeHeuristicRecommender(Recommender):
         # distrubutions for arms
         p_a = [self.query_distribution(a, x_t) for a in range(self.num_arms)]
         # choose argmax arm
-        action = np.argmax([self.sample_beta(p_a[a], a) for a in range(self.num_arms)])
+        action = np.argmax([self.estimate_arm(p_a[a], a) for a in range(self.num_arms)])
         return action, None, None
 
     def _update_tree(self, arm):
