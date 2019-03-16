@@ -3,7 +3,7 @@ import numpy as np
 import math
 from config import *
 from util import *
-
+import time
 
 class EvalResults:
     """
@@ -130,6 +130,8 @@ def shuffle_split_data_set(patients, trainset_ratio = 0.8):
 
 
 def run(patients, models, num_iter=1, trainset_ratio=0.8, verbose=False):
+
+    np.random.seed(int(time.time()))
 
     if patients is None or len(patients) == 0 or models is None or len(models) == 0 \
             or num_iter < 1:

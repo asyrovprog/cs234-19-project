@@ -68,24 +68,39 @@ class ConfigLinUCBDisjointBasic(ConfigLinUCBDisjoint):
 
 
 class ConfigTreeHeuristic(ConfigCommon):
-
     def __init__(self):
         super().__init__()
-        self.algo_name = "TreeHeuristic"
-
-        # parameters for the model
+        self.algo_name = "DTree-Beta"
         self.num_arms = 3
         self.tree_depth = 4
         self.criterion = "gini"
         self.alternative_features = True
+        self.mode = "beta"
 
 class ConfigTreeHeuristicBasic(ConfigTreeHeuristic):
+    def __init__(self):
+        super().__init__()
+        self.algo_name = "DTree-Basic-Beta"
+        self.alternative_features = False
+        self.mode = "beta"
+
+class ConfigTreeHeuristicUCB(ConfigTreeHeuristic):
+    def __init__(self):
+        super().__init__()
+        self.algo_name = "DTree-UCB"
+        self.num_arms = 3
+        self.tree_depth = 4
+        self.criterion = "gini"
+        self.alternative_features = True
+        self.mode = "UCB"
+
+class ConfigTreeHeuristicBasicUCB(ConfigTreeHeuristic):
 
     def __init__(self):
         super().__init__()
-        self.algo_name = "TreeHeuristicBasic"
+        self.algo_name = "DTree-Basic-UCB"
         self.alternative_features = False
-
+        self.mode = "UCB"
 
 class ConfigLasso(ConfigCommon):
 
@@ -113,7 +128,13 @@ def get_config(algo_name):
         return ConfigLinUCBDisjoint()
     elif algo_name == "linucb_disjoint_basic":
         return ConfigLinUCBDisjointBasic()
-    elif algo_name == "tree_heuristics":
+    elif algo_name == "tree_beta":
         return ConfigTreeHeuristic()
+    elif algo_name == "tree_basic_beta":
+        return ConfigTreeHeuristicBasic()
+    elif algo_name == "tree_ucb":
+        return ConfigTreeHeuristicUCB()
+    elif algo_name == "tree_basic_ucb":
+        return ConfigTreeHeuristicBasicUCB()
     elif algo_name == "lasso":
         return ConfigLasso()
