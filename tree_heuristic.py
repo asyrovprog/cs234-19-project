@@ -6,7 +6,7 @@ from plot_utils import *
 LABEL_SUCCESS = 0
 LABEL_FAILED = 1
 
-#
+
 # References:
 #  A Practical Method for Solving Contextual Bandit Problems Using Decision Trees:
 #       https://arxiv.org/pdf/1706.04687.pdf
@@ -16,14 +16,6 @@ LABEL_FAILED = 1
 #       https://arxiv.org/pdf/1802.08780.pdf
 #
 class TreeHeuristicRecommender(Recommender):
-
-    def check_patient_record(self, patient):
-        if patient.properties[AGE].value == AgeGroup.unknown or \
-            patient.properties[HEIGHT] == VAL_UNKNOWN or \
-            patient.properties[WEIGHT] == VAL_UNKNOWN or \
-            patient.properties[DOSE] == VAL_UNKNOWN:
-            return False
-        return True
 
     def load_basic_features(self, patient):
         enzyme = 1 if patient.properties[TEGRETOL] is BinaryFeature.true or \
@@ -49,9 +41,6 @@ class TreeHeuristicRecommender(Recommender):
         """
         Same features as for clinical dose algorithm (a.k.a. basic)
         """
-        if not self.check_patient_record(patient):
-            return None
-
         if self.feature_names is None:
             self.init__basic_feature_names()
 
@@ -64,10 +53,6 @@ class TreeHeuristicRecommender(Recommender):
         """
         Extended set of features
         """
-
-        if not self.check_patient_record(patient):
-            return None
-
         f = self.load_basic_features(patient)
         f += get_one_hot(patient.properties[GENDER])  # size: 3
         f += get_one_hot(patient.properties[VKORC1_1639])  # size: 4
@@ -219,5 +204,3 @@ class TreeHeuristicRecommender(Recommender):
                  filled=True,
                  out_file=self.config.output_path + "tree_arm_" + str(a) + ".dot",
                  feature_names=self.feature_names)
-
-

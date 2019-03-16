@@ -37,7 +37,7 @@ def get_recommender(algo):
     return model
 
 
-def parse_all_records(records, keep_missing=True):
+def parse_all_records(records, keep_missing=False):
     """
     Parse data rows loaded from csv into list of Patient
 
@@ -47,8 +47,11 @@ def parse_all_records(records, keep_missing=True):
     results = list()
     for r in records:
         patient = Patient(r)
-        if keep_missing or (patient.properties[AGE] is AgeGroup.unknown or patient.properties[HEIGHT] == VAL_UNKNOWN \
-            or patient.properties[WEIGHT] == VAL_UNKNOWN or patient.properties[DOSE] == VAL_UNKNOWN):
+        # filter out records with missing essential data
+        if keep_missing or not (patient.properties[AGE] is AgeGroup.unknown or
+                                patient.properties[HEIGHT] == VAL_UNKNOWN or
+                                patient.properties[WEIGHT] == VAL_UNKNOWN or
+                                patient.properties[DOSE] == VAL_UNKNOWN):
             results.append(patient)
 
     return results
@@ -56,7 +59,7 @@ def parse_all_records(records, keep_missing=True):
 
 def load_data():
     raw_data = csv.DictReader(open("data/warfarin.csv"))
-    return parse_all_records(raw_data)
+    return parse_all_records(raw_data, keep_missing=False)
 
 
 if __name__ == '__main__':
