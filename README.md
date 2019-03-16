@@ -23,6 +23,7 @@
 - `warfarin.py` - the `main` program to run Warfarin dosage recommendations
 
 ## USAGE
+### Run Warfarin Dose Recommender
 #### General command template:
 ```
 python warfarin.py --algo=[algo_names] --iter=[iterations] --train_ratio=[training set ratio]
@@ -56,6 +57,19 @@ $ python warfarin.py --algo=linucb_disjoint --train_ratio=.5
 $ python warfarin.py --algo=all --iter=10 --train_ratio=0.7
 ```
 
+### Generate Plots from Result Set
+```
+python plot.py --timestamp=[result_set_timestamp]
+```
+- `[result_set_timestamp]`: subfolder name under `results` folder where a result set from a previous run is located.
+- The output `.png` plot image files are located in the same subfolder: `results\[result_set_timestamp]`
+#### Example:
+- Generate plots from the result set located in `results\20190316_115830`:
+```
+$ python plot.py --timestamp=20190316_115830
+```
+
+
 ## RESOURCES
   1. [Schedule](https://docs.google.com/document/d/1vIYf-HFQKeuH0-SNvdXx2ylfTErejZMM8p4-wouhuYw/edit?ts=5c69e320)
   2. [Project Page](http://web.stanford.edu/class/cs234/project.html)
@@ -80,5 +94,5 @@ $ python warfarin.py --algo=all --iter=10 --train_ratio=0.7
 - [X] implement Tree Heuristic bandit
 - [X] implement Lasso bandit
 - [X] export training and testing results to file
-- [ ] create combined plots
+- [X] create combined plots
 - [ ] experiment with LinUCB's hyperparameter alpha value?
