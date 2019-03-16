@@ -79,6 +79,13 @@ class ConfigTreeHeuristic(ConfigCommon):
         self.criterion = "gini"
         self.alternative_features = True
 
+class ConfigTreeHeuristicBasic(ConfigTreeHeuristic):
+
+    def __init__(self):
+        super().__init__()
+        self.algo_name = "TreeHeuristicBasic"
+        self.alternative_features = False
+
 
 class ConfigLasso(ConfigCommon):
 

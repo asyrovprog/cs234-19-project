@@ -17,21 +17,24 @@ LABEL_FAILED = 1
 #
 class TreeHeuristicRecommender(Recommender):
 
-    def get_features0(self, patient):
-
+    def check_patient_record(self, patient):
         if patient.properties[AGE].value == AgeGroup.unknown or \
             patient.properties[HEIGHT] == VAL_UNKNOWN or \
             patient.properties[WEIGHT] == VAL_UNKNOWN or \
             patient.properties[DOSE] == VAL_UNKNOWN:
-            return None
+            return False
+        return True
 
+    def load_basic_features(self, patient):
         enzyme = 1 if patient.properties[TEGRETOL] is BinaryFeature.true or \
                       patient.properties[DILANTIN] is BinaryFeature.true or \
                       patient.properties[RIFAMPIN] is BinaryFeature.true or \
-                      any(m in patient.properties[MEDICATIONS] for m in ["carbamazepine", "phenytoin", "rifampin", "rifampicin"]) \
+                      any(m in patient.properties[MEDICATIONS] for m in ["carbamazepine", "phenytoin", "rifampin",
+                                                                         "rifampicin"]) \
             else 0
 
-        amiodarone = 1 if patient.properties[CORDARONE] is BinaryFeature.true or "amiodarone" in patient.properties[MEDICATIONS] \
+        amiodarone = 1 if patient.properties[CORDARONE] is BinaryFeature.true or \
+                          "amiodarone" in patient.properties[MEDICATIONS] \
             else 0
 
         features = [patient.properties[AGE].value, patient.properties[HEIGHT], patient.properties[WEIGHT],
@@ -40,31 +43,40 @@ class TreeHeuristicRecommender(Recommender):
                     1 if patient.properties[RACE] is Race.unknown else 0,
                     enzyme, amiodarone]
 
-        if self.feature_names is None:
-            self.feature_names = [AGE, HEIGHT, WEIGHT, "Asia", "Africa", "Other", "Enzyme", "Amiodarone"]
+        return features
 
-        return np.array(features)
-
-    def get_features1(self, patient):
-        if patient.properties[AGE].value == AgeGroup.unknown or \
-            patient.properties[HEIGHT] == VAL_UNKNOWN or \
-            patient.properties[WEIGHT] == VAL_UNKNOWN or \
-            patient.properties[DOSE] == VAL_UNKNOWN:
+    def get_features0(self, patient):
+        """
+        Same features as for clinical dose algorithm (a.k.a. basic)
+        """
+        if not self.check_patient_record(patient):
             return None
 
-        features = [patient.properties[AGE].value, patient.properties[HEIGHT],
-                    patient.properties[WEIGHT]]  # size: 3
-        features += get_one_hot(patient.properties[GENDER])  # size: 3
-        features += get_one_hot(patient.properties[RACE])  # size: 5
-        features += get_one_hot(patient.properties[VKORC1_1639])  # size: 4
+        if self.feature_names is None:
+            self.init__basic_feature_names()
+
+        return np.array(self.load_basic_features(patient))
+
+    def init__basic_feature_names(self):
+        self.feature_names = [AGE, HEIGHT, WEIGHT, "Asian", "African", "Other", "Enzyme", "Amiodarone"]
+
+    def get_features1(self, patient):
+        """
+        Extended set of features
+        """
+
+        if not self.check_patient_record(patient):
+            return None
+
+        f = self.load_basic_features(patient)
+        f += get_one_hot(patient.properties[GENDER])  # size: 3
+        f += get_one_hot(patient.properties[VKORC1_1639])  # size: 4
 
         if self.feature_names is None:
-            self.feature_names = [AGE, HEIGHT, WEIGHT,
-                                  "Gender[0]", "Gender[1]", "Gender[2]",
-                                  "Race[0]", "Race[1]", "Race[2]", "Race[3]", "Race[4]",
-                                  "VKORC1[0]", "VKORC1[1]", "VKORC1[2]", "VKORC1[3]"]
+            self.init__basic_feature_names()
+            self.feature_names += ["Gender[0]", "Gender[1]", "Gender[2]", "VKORC1[0]", "VKORC1[1]", "VKORC1[2]", "VKORC1[3]"]
 
-        return np.array(features)
+        return np.array(f)
 
     def get_features(self, patient):
         if self.config.alternative_features:
@@ -200,10 +212,12 @@ class TreeHeuristicRecommender(Recommender):
         self.iter_item_id += 1
 
     def plot(self):
+        fill_plot(self.plot_mean, self.plot_variance, self.config.output_path + "result.png", "TreeHeur-Beta")
+
         for a in range(self.num_arms):
             tree.export_graphviz(self.action_trees[a],
                  filled=True,
                  out_file=self.config.output_path + "tree_arm_" + str(a) + ".dot",
                  feature_names=self.feature_names)
-        fill_plot(self.plot_mean[20:], self.plot_variance[20:], self.config.output_path + "result.png", "DecisionTree-Beta")
+
 
