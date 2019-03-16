@@ -52,12 +52,12 @@ class LinUCBDisjointRecommender(Recommender):
         :return: feature vector for the given patient
         """
         # missing values, we can't apply the algorithm
-        if patient.properties[DOSE] == VAL_UNKNOWN or \
-            patient.properties[AGE].value == AgeGroup.unknown or \
-            patient.properties[HEIGHT] == VAL_UNKNOWN or \
-            patient.properties[WEIGHT] == VAL_UNKNOWN:
-            return None
-
+        # if patient.properties[DOSE] == VAL_UNKNOWN or \
+        #     patient.properties[AGE].value == AgeGroup.unknown or \
+        #     patient.properties[HEIGHT] == VAL_UNKNOWN or \
+        #     patient.properties[WEIGHT] == VAL_UNKNOWN:
+        #     return None
+        #
         features = list([1, patient.properties[AGE].value])   # size 2
 
         # features += [patient.properties[f] for f in NUMERICAL_FEATURES]     # size 4
@@ -141,13 +141,6 @@ class LinUCBDisjointBasicRecommender(LinUCBDisjointRecommender):
         :param patient: patient data
         :return: feature vector for the given patient
         """
-        # missing values, we can't apply the algorithm
-        if patient.properties[DOSE] == VAL_UNKNOWN or \
-            patient.properties[AGE].value == AgeGroup.unknown or \
-            patient.properties[HEIGHT] == VAL_UNKNOWN or \
-            patient.properties[WEIGHT] == VAL_UNKNOWN:
-            return None
-
         enzyme = 1 if patient.properties[TEGRETOL] is BinaryFeature.true or \
                       patient.properties[DILANTIN] is BinaryFeature.true or \
                       patient.properties[RIFAMPIN] is BinaryFeature.true or \
