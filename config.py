@@ -7,9 +7,6 @@ class ConfigCommon:
         # output config
         self.output_path = "results/{}/".format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
         self.log_path = self.output_path + "log.txt"
-        self.regret_plot_output = self.output_path + "regret.png"
-        self.payoff_plot_output = self.output_path + "payoff.png"
-        self.cfinterval_plot_output = self.output_path + "cfinterval.png"
 
     def get_regret_filename(self, model, is_training):
         s = "training" if is_training else "testing"
@@ -78,6 +75,7 @@ class ConfigTreeHeuristic(ConfigCommon):
         self.tree_depth = 4
         self.criterion = "gini"
         self.alternative_features = True
+
 
 class ConfigTreeHeuristicBasic(ConfigTreeHeuristic):
 
