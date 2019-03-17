@@ -198,6 +198,9 @@ def run(patients, models, num_iter=1, trainset_ratio=0.8, verbose=False):
                 f"mean regret: {testing_results.get_overall_mean_regret_for_model(m)}, " \
                 f"accuracy: {1 - testing_results.get_overall_err_rate_for_model(m)}\n"
 
+    for m in models:
+        m.plot()
+
     logging.info(msg)
     if verbose:
         print(msg)

@@ -19,7 +19,7 @@ LABEL_FAILED = 1
 #
 class TreeHeuristicRecommender(Recommender):
 
-    def load_basic_features(self, patient):
+    def get_clinical_meds(self, patient):
         enzyme = 1 if patient.properties[TEGRETOL] is BinaryFeature.true or \
                       patient.properties[DILANTIN] is BinaryFeature.true or \
                       patient.properties[RIFAMPIN] is BinaryFeature.true or \
@@ -30,12 +30,13 @@ class TreeHeuristicRecommender(Recommender):
         amiodarone = 1 if patient.properties[CORDARONE] is BinaryFeature.true or \
                           "amiodarone" in patient.properties[MEDICATIONS] \
             else 0
+        return [enzyme, amiodarone]
 
+    def load_basic_features(self, patient):
         features = [patient.properties[AGE].value, patient.properties[HEIGHT], patient.properties[WEIGHT],
                     1 if patient.properties[RACE] is Race.asian else 0,
                     1 if patient.properties[RACE] is Race.black else 0,
-                    1 if patient.properties[RACE] is Race.unknown else 0,
-                    enzyme, amiodarone]
+                    1 if patient.properties[RACE] is Race.unknown else 0] + self.get_clinical_meds(patient)
 
         return features
 
@@ -51,46 +52,27 @@ class TreeHeuristicRecommender(Recommender):
     def init__basic_feature_names(self):
         self.feature_names = [AGE, HEIGHT, WEIGHT, "Asian", "African", "Other", "Enzyme", "Amiodarone"]
 
-    def get_VKORC1_features(self, patient):
-        """
-        Extended set of features
-        """
-        f = self.load_basic_features(patient)
-        f += get_one_hot(patient.properties[GENDER])  # size: 3
-        f += get_one_hot(patient.properties[VKORC1_1639])  # size: 4
-
-        return np.array(f)
-
     def get_extended_features(self, patient):
         """
         Extended set of features
         """
-        features = list([patient.properties[AGE].value])  # size 1
+        f = list([patient.properties[AGE].value]) + self.get_clinical_meds(patient)
 
-        for f in NUMERICAL_FEATURES:
-            features.append(patient.properties[f])
+        f.append(feature_scaling(BMI_MIN, BMI_MAX,
+                                 get_bmi(patient.properties[HEIGHT], patient.properties[WEIGHT])))
 
-        features += get_one_hot_from_list(patient.properties[INDICATION])  # size: 9
-        features += get_one_hot(patient.properties[GENDER])  # size: 3
-        features += get_one_hot(patient.properties[RACE])  # size: 5
+        f += get_one_hot(patient.properties[GENDER])
+        f += get_one_hot(patient.properties[VKORC1_1639])
+        f += get_one_hot(patient.properties[ASPIRIN])
+        f += get_one_hot(patient.properties[SMOKER])
+        f += get_one_hot(patient.properties[IS_STABLE])
 
-        for f in BINARY_FEATURES:
-            features += get_one_hot(patient.properties[f])  # size: 23 * 3 = 69
-
-        features += get_one_hot_from_list(patient.properties[CYP2C9])  # size: 15
-
-        for f in VKORC1_GENO_FEATURES:
-            features += get_one_hot(patient.properties[f])  # size: 7 * 4 = 28
-
-        return np.array(features)
-
+        return np.array(f)
 
     def get_features(self, patient):
         f = self.config.feature_set
         if f == "clinical":
             return self.get_clinical_features(patient)
-        elif f == "VKORC1":
-            return self.get_VKORC1_features(patient)
         return self.get_extended_features(patient)
 
     def __init__(self, config):
@@ -196,8 +178,12 @@ class TreeHeuristicRecommender(Recommender):
         unfortunately significantly slows down training, because we have to
         rebuild action tree on each update.
         """
-        self.action_trees[arm] = tree.DecisionTreeClassifier(criterion = self.config.criterion, max_depth = self.config.tree_depth)
-        self.action_trees[arm].fit(self.Dta_x[arm], self.Dta_y[arm])
+        t = tree.DecisionTreeClassifier(min_samples_split=self.config.min_samples_split,
+            min_samples_leaf=self.config.min_samples_leaf, max_leaf_nodes=self.config.max_leaf_nodes,
+            criterion=self.config.criterion,max_depth=self.config.tree_depth)
+
+        self.action_trees[arm] = t
+        t.fit(self.Dta_x[arm], self.Dta_y[arm])
         self.Nt[arm] += 1
 
     def update(self, arm, x_t, reward):

@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def fill_plot(mean, filename, label):
-    N = 50
+    N = 100
     x = [i for i in range(len(mean))]
     mean = np.array(mean)
 
@@ -11,5 +11,8 @@ def fill_plot(mean, filename, label):
 
     plt.plot(x, mean, label=label)
     plt.legend(loc='lower right')
+
+    plt.ylim(top=0.85)
+    plt.ylim(bottom=0)  # adjust the bottom leaving top unchanged
     plt.grid(True)
     plt.savefig(fname=filename)
