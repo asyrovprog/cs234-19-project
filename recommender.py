@@ -1,4 +1,4 @@
-import os
+import logging
 from util import *
 
 
@@ -6,7 +6,7 @@ class Recommender(object):
     """
     Abstract Class for implementing a Dose Recommendation Algorithm
     """
-    def __init__(self, config, logger=None):
+    def __init__(self, config):
         """
         Initialize Recommender Class
 
@@ -15,12 +15,6 @@ class Recommender(object):
                 logger: logger instance from the logging module
         """
         self.config = config
-        # directory for outputs
-        if not os.path.exists(self.config.output_path):
-          os.makedirs(self.config.output_path)
-        self.logger = logger
-        if logger is None:
-          self.logger = get_logger(config.log_path)
 
     def get_reward(self, action, label):
         return CORRECT_DOSE_REWARD if action == label else INCORRECT_DOSE_REWARD

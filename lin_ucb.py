@@ -1,4 +1,5 @@
 import numpy as np
+import logging
 from recommender import *
 from feature import *
 from constant import *
@@ -39,7 +40,7 @@ class LinUCBDisjointRecommender(Recommender):
         self.reset()
 
     def reset(self):
-        self.logger.debug(f"[{self.config.algo_name}] reset!")
+        logging.debug(f"[{self.config.algo_name}] reset!")
         for a in range(self.num_arms):
             self.A[a] = np.identity(self.d)               # d x d
             self.b[a] = np.atleast_2d(np.zeros(self.d)).T # d x 1
@@ -85,7 +86,7 @@ class LinUCBDisjointRecommender(Recommender):
         return np.array(features)
 
     def update(self, arm, context_feature, reward):
-        self.logger.debug(f"[{self.config.algo_name}] update: action={arm}; reward={reward}; context={context_feature}")
+        logging.debug(f"[{self.config.algo_name}] update: action={arm}; reward={reward}; context={context_feature}")
         self.A[arm] += np.outer(context_feature, context_feature)
         self.b[arm] += reward * np.reshape(context_feature, (self.d, 1))
 
@@ -111,7 +112,7 @@ class LinUCBDisjointRecommender(Recommender):
                 best_arm = a
                 best_conf_interval = conf_interval
 
-        self.logger.debug(f"[{self.config.algo_name}] recommend: chosen action={best_arm}; "
+        logging.debug(f"[{self.config.algo_name}] recommend: chosen action={best_arm}; "
                           f"estimated payoff={best_payoff}; conf interval={best_conf_interval}")
 
         return best_arm, best_payoff, best_conf_interval

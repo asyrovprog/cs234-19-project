@@ -3,6 +3,7 @@ from preprocess import *
 from sklearn import tree
 from plot_utils import *
 import math
+import logging
 
 LABEL_SUCCESS = 0
 LABEL_FAILED = 1
