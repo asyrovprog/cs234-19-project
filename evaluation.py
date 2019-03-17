@@ -181,8 +181,8 @@ def run(patients, models, num_iter=1, trainset_ratio=0.8, verbose=False):
         testing_results.export_results()
 
     # compose run summary message
-    msg = f"------------------------\n[SUMMARY OF THE RUN: {len(models)} models, {len(patients)} patients, " \
-        f"{num_iter} iterations]\n"
+    msg = f"\n------------------------\n[SUMMARY OF THE RUN: {len(models)} model(s), {len(patients)} patients, " \
+        f"{num_iter} iteration(s)]\n"
     train_percentage = trainset_ratio * 100
     if trainset_ratio > 0:
         msg += f"------------------------\nTraining: {len(training_indices)} ({train_percentage}%) patients\n"
