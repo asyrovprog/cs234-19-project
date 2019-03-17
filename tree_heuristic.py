@@ -38,7 +38,7 @@ class TreeHeuristicRecommender(Recommender):
 
         return features
 
-    def get_features0(self, patient):
+    def get_clinical_features(self, patient):
         """
         Same features as for clinical dose algorithm (a.k.a. basic)
         """
@@ -50,7 +50,7 @@ class TreeHeuristicRecommender(Recommender):
     def init__basic_feature_names(self):
         self.feature_names = [AGE, HEIGHT, WEIGHT, "Asian", "African", "Other", "Enzyme", "Amiodarone"]
 
-    def get_features1(self, patient):
+    def get_VKORC1_features(self, patient):
         """
         Extended set of features
         """
@@ -58,16 +58,39 @@ class TreeHeuristicRecommender(Recommender):
         f += get_one_hot(patient.properties[GENDER])  # size: 3
         f += get_one_hot(patient.properties[VKORC1_1639])  # size: 4
 
-        if self.feature_names is None:
-            self.init__basic_feature_names()
-            self.feature_names += ["Gender[0]", "Gender[1]", "Gender[2]", "VKORC1[0]", "VKORC1[1]", "VKORC1[2]", "VKORC1[3]"]
-
         return np.array(f)
 
+    def get_extended_features(self, patient):
+        """
+        Extended set of features
+        """
+        features = list([patient.properties[AGE].value])  # size 1
+
+        for f in NUMERICAL_FEATURES:
+            features.append(patient.properties[f])
+
+        features += get_one_hot_from_list(patient.properties[INDICATION])  # size: 9
+        features += get_one_hot(patient.properties[GENDER])  # size: 3
+        features += get_one_hot(patient.properties[RACE])  # size: 5
+
+        for f in BINARY_FEATURES:
+            features += get_one_hot(patient.properties[f])  # size: 23 * 3 = 69
+
+        features += get_one_hot_from_list(patient.properties[CYP2C9])  # size: 15
+
+        for f in VKORC1_GENO_FEATURES:
+            features += get_one_hot(patient.properties[f])  # size: 7 * 4 = 28
+
+        return np.array(features)
+
+
     def get_features(self, patient):
-        if self.config.alternative_features:
-            return self.get_features1(patient)
-        return self.get_features0(patient)
+        f = self.config.feature_set
+        if f == "clinical":
+            return self.get_clinical_features(patient)
+        elif f == "VKORC1":
+            return self.get_VKORC1_features(patient)
+        return self.get_extended_features(patient)
 
     def __init__(self, config):
         super().__init__(config)
@@ -82,13 +105,14 @@ class TreeHeuristicRecommender(Recommender):
         self.Dta_x = []         # for each arm: samples which were classified as best for the arm
         self.Dta_y = []         # for each arm: actual results (classification succeeded/failed)
 
-        self.iter = 0
+        self.iter = -1
         self.iter_item_id = 0
         self.num_correct = 0
 
         self.plot_mean = []
         self.plot_variance = []
         self.prev_iter = 0
+        self.Nt = [] # number of times arm was tried
 
         self.reset()
 
@@ -101,33 +125,25 @@ class TreeHeuristicRecommender(Recommender):
         self.Dta_x = [[] for _ in range(self.num_arms)]
         self.Dta_y = [[] for _ in range(self.num_arms)]
 
+        self.Nt = [0  for _ in range(self.num_arms)]
+
         # Decision Tree for each action. At each node we keep number of
         # successes and failures (so our label is binary)
         self.action_trees = [None for _ in range(self.num_arms)]
 
-        self.iter = 0
+        self.iter += 1
         self.iter_item_id = 0
         self.num_correct = 0
 
 
     def estimate_arm(self, params, arm):
         """
-            Sample beta distrubution. params is (F, S) for
+        Sample beta distrubution. params is (F, S) for
         X_arm ~ Beta(S_0[arm] + S, F_0[arm] + F)
         """
-        res = 0.0
-        if self.config.mode == "beta":
-            S = self.S_0[arm] + params[1]
-            F = self.F_0[arm] + params[0]
-            res = np.random.beta(S, F)
-        elif self.config.mode == "UCB":
-            S = params[1] + 1
-            F = params[0]
-            t = S + F
-            n_j = float(S + F)
-            mu = (S * CORRECT_DOSE_REWARD + F * INCORRECT_DOSE_REWARD) / n_j
-            res = mu + math.sqrt(2.0 * math.log(t / n_j))
-
+        S = self.S_0[arm] + params[1] + 1
+        F = self.F_0[arm] + params[0]
+        res = np.random.beta(S, F)
         return res
 
     def query_distribution(self, a, x_t):
@@ -181,6 +197,7 @@ class TreeHeuristicRecommender(Recommender):
         """
         self.action_trees[arm] = tree.DecisionTreeClassifier(criterion = self.config.criterion, max_depth = self.config.tree_depth)
         self.action_trees[arm].fit(self.Dta_x[arm], self.Dta_y[arm])
+        self.Nt[arm] += 1
 
     def update(self, arm, x_t, reward):
         label = LABEL_SUCCESS if reward == CORRECT_DOSE_REWARD else LABEL_FAILED
@@ -192,13 +209,14 @@ class TreeHeuristicRecommender(Recommender):
         # the following should ideally be moved to executor
         #
         self.num_correct += 1 if label == LABEL_SUCCESS else 0
-        accuracy = self.num_correct / (self.iter_item_id + 1)
+        accuracy = 1 if label == LABEL_SUCCESS else 0
 
         if len(self.plot_mean) == self.iter_item_id:
             self.plot_mean.append(accuracy)
             self.plot_variance.append(0.0)
         else:
-            n, idx = self.iter + 1, self.iter_item_id
+            n = self.iter + 1
+            idx = self.iter_item_id
             prev_mu = self.plot_mean[idx]
             prev_s2 = self.plot_variance[idx]
 
@@ -208,10 +226,11 @@ class TreeHeuristicRecommender(Recommender):
         self.iter_item_id += 1
 
     def plot(self):
-        fill_plot(self.plot_mean, self.plot_variance, self.config.output_path + "result.png", "TreeHeur-Beta")
+        fill_plot(self.plot_mean, self.config.output_path + self.config.algo_name + "-accuracy.png", self.config.algo_name)
 
-        for a in range(self.num_arms):
-            tree.export_graphviz(self.action_trees[a],
-                 filled=True,
-                 out_file=self.config.output_path + "tree_arm_" + str(a) + ".dot",
-                 feature_names=self.feature_names)
+        if not self.feature_names is None:
+            for a in range(self.num_arms):
+                tree.export_graphviz(self.action_trees[a],
+                    filled=True,
+                    out_file=self.config.output_path + "tree_arm_" + str(a) + ".dot",
+                    feature_names=self.feature_names)
