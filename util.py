@@ -1,4 +1,3 @@
-import logging
 import sys
 import csv
 import matplotlib
@@ -49,19 +48,19 @@ def get_int(s):
     return value
 
 
-def get_logger(filename):
-    """
-    Return a logger instance to a file
-    """
-    logger = logging.getLogger('logger')
-    logger.setLevel(logging.ERROR)
-    logging.basicConfig(format='%(message)s', level=logging.ERROR)
-    handler = logging.FileHandler(filename)
-    handler.setLevel(logging.DEBUG)
-    handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s: %(message)s'))
-    logging.getLogger().addHandler(handler)
-    return logger
-
+# def get_logger(filename):
+#     """
+#     Return a logger instance to a file
+#     """
+#     logger = logging.getLogger('logger')
+#     logger.setLevel(logging.DEBUG)
+#     logging.basicConfig(format='%(message)s', level=logging.DEBUG)
+#     handler = logging.FileHandler(filename)
+#     handler.setLevel(logging.DEBUG)
+#     handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s: %(message)s'))
+#     logging.getLogger().addHandler(handler)
+#     return logger
+#
 
 def export_stats_list(stats_list, filename):
     """

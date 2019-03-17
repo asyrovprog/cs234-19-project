@@ -1,4 +1,5 @@
 from recommender import *
+import logging
 
 
 class FixedDoseRecommender(Recommender):
