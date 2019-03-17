@@ -97,7 +97,7 @@ class EvalResults:
                         for i in range(len(self.mistakes[model_idx]))])
 
 
-def shuffle_split_data_set(patients, trainset_ratio = 0.8):
+def shuffle_split_data_set(patients, trainset_ratio=0.8):
     data_set_size = len(patients)
     training_set_size = math.ceil(data_set_size * trainset_ratio)
     indices = np.arange(data_set_size)
