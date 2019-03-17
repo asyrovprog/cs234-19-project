@@ -1,6 +1,8 @@
 import csv
+import os
 import argparse
 import evaluation
+import logging
 from config import *
 from fixed_dose import *
 from clinical_dose import *
@@ -17,21 +19,21 @@ parser.add_argument("--iter", required=False, type=int)
 parser.add_argument("--train_ratio", required=False, type=float)
 
 
-def get_recommender(algo):
+def get_recommender(algo, config):
 
     # default recommender: FixedDose
-    model = FixedDoseRecommender(ConfigFixedDose())
+    model = FixedDoseRecommender(ConfigFixedDose(config))
 
     if algo == "clinical_dose":
-        model = ClinicalDoseRecommender(ConfigClinicalDose())
+        model = ClinicalDoseRecommender(ConfigClinicalDose(config))
     elif algo == "linucb_disjoint":
-        model = LinUCBDisjointRecommender(ConfigLinUCBDisjoint())
+        model = LinUCBDisjointRecommender(ConfigLinUCBDisjoint(config))
     elif algo == "linucb_disjoint_basic":
-        model = LinUCBDisjointBasicRecommender(ConfigLinUCBDisjointBasic())
+        model = LinUCBDisjointBasicRecommender(ConfigLinUCBDisjointBasic(config))
     elif algo.startswith("tree"):
-        model = TreeHeuristicRecommender(get_config(algo))
+        model = TreeHeuristicRecommender(get_config(algo, output_path))
     elif algo == "lasso":
-        model = LassoBandit(ConfigLasso())
+        model = LassoBandit(ConfigLasso(config))
     return model
 
 
@@ -43,7 +45,9 @@ def parse_all_records(records, keep_missing=False):
     :return: list of Patient
     """
     results = list()
+    rawCount = 0
     for r in records:
+        rawCount += 1
         patient = Patient(r)
         # filter out records with missing essential data
         if keep_missing or not (patient.properties[AGE] is AgeGroup.unknown or
@@ -51,24 +55,35 @@ def parse_all_records(records, keep_missing=False):
                                 patient.properties[WEIGHT] == VAL_UNKNOWN or
                                 patient.properties[DOSE] == VAL_UNKNOWN):
             results.append(patient)
-
+    logging.info(f"Parsing raw records: loaded record count={rawCount}, returned patient count={len(results)}, "
+                 f"keep_missing={keep_missing}")
     return results
 
 
-def load_data():
-    raw_data = csv.DictReader(open("data/warfarin.csv"))
+def load_data(filename):
+    logging.info(f"Loading data set from: {filename}")
+    raw_data = csv.DictReader(open(filename))
     return parse_all_records(raw_data, keep_missing=False)
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
 
-    patients = load_data()
+    output_path = "results/{}/".format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    # directory for outputs
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+    log_path = output_path + "log.txt"
+    logging.basicConfig(filename=log_path, format='%(asctime)s:%(levelname)s: %(message)s', level=logging.INFO)
+    datafile = "data/warfarin.csv"
+    patients = load_data(datafile)
     models = []
+    logging.info(f"Initializing recommender model(s): {args.algo}")
+
     if args.algo == "all":  # run all models
-        models += [get_recommender(algo) for algo in ALGOS]
+        models += [get_recommender(algo, output_path) for algo in ALGOS]
     else:   # run a single model
-        models += [get_recommender(args.algo)]
+        models += [get_recommender(args.algo, output_path)]
 
     iters = args.iter if args.iter else 1
     train_ratio = args.train_ratio if args.train_ratio is not None else 0.8

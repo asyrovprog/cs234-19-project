@@ -3,10 +3,9 @@ from constant import *
 
 
 class ConfigCommon:
-    def __init__(self):
+    def __init__(self, output_path):
         # output config
-        self.output_path = "results/{}/".format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
-        self.log_path = self.output_path + "log.txt"
+        self.output_path = output_path
 
     def get_regret_filename(self, model, is_training):
         s = "training" if is_training else "testing"
@@ -27,8 +26,8 @@ class ConfigCommon:
 
 class ConfigFixedDose(ConfigCommon):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, output_path):
+        super().__init__(output_path)
         self.algo_name = "FixedDose"
 
         # parameters for the model
@@ -37,15 +36,15 @@ class ConfigFixedDose(ConfigCommon):
 
 class ConfigClinicalDose(ConfigCommon):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, output_path):
+        super().__init__(output_path)
         self.algo_name = "ClinicalDose"
 
 
 class ConfigLinUCBDisjoint(ConfigCommon):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, output_path):
+        super().__init__(output_path)
         self.algo_name = "LinUCBDisjoint"
 
         # parameters for the model
@@ -56,8 +55,8 @@ class ConfigLinUCBDisjoint(ConfigCommon):
 
 class ConfigLinUCBDisjointBasic(ConfigLinUCBDisjoint):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, output_path):
+        super().__init__(output_path)
         self.algo_name = "LinUCBDisjointBasic"
 
         # parameters for the model
@@ -65,8 +64,8 @@ class ConfigLinUCBDisjointBasic(ConfigLinUCBDisjoint):
 
 
 class ConfigTreeHeuristic(ConfigCommon):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, output_path):
+        super().__init__(output_path)
         self.algo_name = "DTree-Beta"
         self.num_arms = 3
         self.tree_depth = 4
@@ -75,15 +74,15 @@ class ConfigTreeHeuristic(ConfigCommon):
         self.mode = "beta"
 
 class ConfigTreeHeuristicBasic(ConfigTreeHeuristic):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, output_path):
+        super().__init__(output_path)
         self.algo_name = "DTree-Basic-Beta"
         self.alternative_features = False
         self.mode = "beta"
 
 class ConfigTreeHeuristicUCB(ConfigTreeHeuristic):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, output_path):
+        super().__init__(output_path)
         self.algo_name = "DTree-UCB"
         self.num_arms = 3
         self.tree_depth = 4
@@ -94,8 +93,8 @@ class ConfigTreeHeuristicUCB(ConfigTreeHeuristic):
 
 class ConfigTreeHeuristicBasicUCB(ConfigTreeHeuristic):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, output_path):
+        super().__init__(output_path)
         self.algo_name = "DTree-Basic-UCB"
         self.alternative_features = False
         self.mode = "UCB"
@@ -103,8 +102,8 @@ class ConfigTreeHeuristicBasicUCB(ConfigTreeHeuristic):
 
 class ConfigLasso(ConfigCommon):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, output_path):
+        super().__init__(output_path)
         self.algo_name = "Lasso"
 
         self.num_arms = 3
@@ -118,22 +117,22 @@ class ConfigLasso(ConfigCommon):
         self.lambda2 = 1.0
 
 
-def get_config(algo_name):
+def get_config(algo_name, output_path):
     if algo_name == "fixed_dose":
-        return ConfigFixedDose()
+        return ConfigFixedDose(output_path)
     elif algo_name == "clinical_dose":
-        return ConfigClinicalDose()
+        return ConfigClinicalDose(output_path)
     elif algo_name == "linucb_disjoint":
-        return ConfigLinUCBDisjoint()
+        return ConfigLinUCBDisjoint(output_path)
     elif algo_name == "linucb_disjoint_basic":
-        return ConfigLinUCBDisjointBasic()
+        return ConfigLinUCBDisjointBasic(output_path)
     elif algo_name == "tree_beta":
-        return ConfigTreeHeuristic()
+        return ConfigTreeHeuristic(output_path)
     elif algo_name == "tree_basic_beta":
-        return ConfigTreeHeuristicBasic()
+        return ConfigTreeHeuristicBasic(output_path)
     elif algo_name == "tree_ucb":
-        return ConfigTreeHeuristicUCB()
+        return ConfigTreeHeuristicUCB(output_path)
     elif algo_name == "tree_basic_ucb":
-        return ConfigTreeHeuristicBasicUCB()
+        return ConfigTreeHeuristicBasicUCB(output_path)
     elif algo_name == "lasso":
-        return ConfigLasso()
+        return ConfigLasso(output_path)

@@ -1,5 +1,6 @@
 # Utility functions for evaluation.
 import numpy as np
+import logging
 import math
 from config import *
 from util import *
@@ -108,6 +109,9 @@ def shuffle_split_data_set(patients, trainset_ratio = 0.8):
 
 def run(patients, models, num_iter=1, trainset_ratio=0.8, verbose=False):
 
+    logging.info(f"Starting model training/evaluation with: {len(patients)} patients, {num_iter} iterations,"
+                 f"train_ratio={trainset_ratio}")
+
     np.random.seed(int(time.time()))
 
     if patients is None or len(patients) == 0 or models is None or len(models) == 0 \
@@ -134,8 +138,10 @@ def run(patients, models, num_iter=1, trainset_ratio=0.8, verbose=False):
 
             # training on the training set
             if trainset_ratio > 0:
+                msg = f"Training Iteration: {i}, model: {model.config.algo_name}"
+                logging.info(msg)
                 if verbose:
-                    print(f"Training Iteration: {i}, model: {model.config.algo_name}")
+                    print(msg)
 
                 training_regrets, training_mistakes, training_payoffs, training_conf_intervals = \
                     model.run(patients, training_indices, is_training=True)
@@ -143,14 +149,18 @@ def run(patients, models, num_iter=1, trainset_ratio=0.8, verbose=False):
                 training_results.log_results(m, i, training_regrets, training_mistakes,
                                              training_payoffs, training_conf_intervals)
 
+                msg = f"mean regret: {training_results.get_per_iter_mean_regret_for_model(m, i)}, " \
+                    f"accuracy: {1 - training_results.get_per_iter_err_rate_for_model(m, i)}"
+                logging.info(msg)
                 if verbose:
-                    print(f"mean regret: {training_results.get_per_iter_mean_regret_for_model(m, i)}, "
-                          f"accuracy: {1 - training_results.get_per_iter_err_rate_for_model(m, i)}")
+                    print(msg)
 
             # testing on the test set with the model params frozen
             if trainset_ratio < 1:
+                msg = f"Testing Iteration: {i}, model: {model.config.algo_name}"
+                logging.info(msg)
                 if verbose:
-                    print(f"Testing Iteration: {i}, model: {model.config.algo_name}")
+                    print(msg)
 
                 testing_regrest, testing_mistakes, testing_payoffs, testing_conf_intervals = \
                     model.run(patients, testing_indices, is_training=False)
@@ -158,9 +168,11 @@ def run(patients, models, num_iter=1, trainset_ratio=0.8, verbose=False):
                 testing_results.log_results(m, i, testing_regrest, testing_mistakes,
                                             testing_payoffs, testing_conf_intervals)
 
+                msg = f"mean regret: {testing_results.get_per_iter_mean_regret_for_model(m, i)}, " \
+                    f"accuracy: {1 - testing_results.get_per_iter_err_rate_for_model(m, i)}"
+                logging.info(msg)
                 if verbose:
-                    print(f"mean regret: {testing_results.get_per_iter_mean_regret_for_model(m, i)}, "
-                          f"accuracy: {1 - testing_results.get_per_iter_err_rate_for_model(m, i)}")
+                    print(msg)
 
     if trainset_ratio > 0:
         training_results.export_results()
@@ -168,18 +180,24 @@ def run(patients, models, num_iter=1, trainset_ratio=0.8, verbose=False):
     if trainset_ratio < 1:
         testing_results.export_results()
 
-    if verbose:
-        print("------------------------\n[SUMMARY OF THE RUN]")
-        if trainset_ratio > 0:
-            print(f"------------------------\nTraining: {trainset_ratio * 100}% patients")
-            for m in range(len(models)):
-                print(f"model: {models[m].config.algo_name}, "
-                      f"mean regret: {training_results.get_overall_mean_regret_for_model(m)}, "
-                      f"accuracy: {1 - training_results.get_overall_err_rate_for_model(m)}")
-        if trainset_ratio < 1:
-            print(f"------------------------\nTesting: {(1 - trainset_ratio) * 100}% patients")
-            for m in range(len(models)):
-                print(f"model: {models[m].config.algo_name}, "
-                      f"mean regret: {testing_results.get_overall_mean_regret_for_model(m)}, "
-                      f"accuracy: {1 - testing_results.get_overall_err_rate_for_model(m)}")
+    # compose run summary message
+    msg = f"\n------------------------\n[SUMMARY OF THE RUN: {len(models)} model(s), {len(patients)} patients, " \
+        f"{num_iter} iteration(s)]\n"
+    train_percentage = trainset_ratio * 100
+    if trainset_ratio > 0:
+        msg += f"------------------------\nTraining: {len(training_indices)} ({train_percentage}%) patients\n"
+        for m in range(len(models)):
+            msg += f"[{models[m].config.algo_name}] " \
+                f"mean regret: {training_results.get_overall_mean_regret_for_model(m)}, " \
+                f"accuracy: {1 - training_results.get_overall_err_rate_for_model(m)}\n"
 
+    if trainset_ratio < 1:
+        msg += f"------------------------\nTesting: {len(testing_indices)} ({100 - train_percentage}%) patients\n"
+        for m in range(len(models)):
+            msg += f"[{models[m].config.algo_name}] " \
+                f"mean regret: {testing_results.get_overall_mean_regret_for_model(m)}, " \
+                f"accuracy: {1 - testing_results.get_overall_err_rate_for_model(m)}\n"
+
+    logging.info(msg)
+    if verbose:
+        print(msg)

@@ -1,4 +1,5 @@
 import numpy as np
+import logging
 from recommender import *
 from feature import *
 from constant import *
@@ -42,7 +43,7 @@ class LassoBandit(Recommender):
         self.reset()
 
     def reset(self):
-        self.logger.debug(f"[{self.config.algo_name}] reset!")
+        logging.debug(f"[{self.config.algo_name}] reset!")
 
         # Keep tract of iteration time. This is used to schedule forced arm sampling.
         self.t = 0
@@ -100,7 +101,7 @@ class LassoBandit(Recommender):
         return np.array(features)
 
     def update(self, arm, context_feature, reward):
-        self.logger.debug(
+        logging.debug(
             f"[{self.config.algo_name}] update: action={arm}; reward={reward}; context={context_feature}")
         if self.forced:
             self.force_sample_X[arm].append(context_feature)
