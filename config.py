@@ -65,42 +65,24 @@ class ConfigLinUCBDisjointBasic(ConfigLinUCBDisjoint):
         # parameters for the model
         self.feature_count = 9  # this must match actual feature count
 
-
 class ConfigTreeHeuristic(ConfigCommon):
     def __init__(self, output_path):
         super().__init__(output_path)
-        self.algo_name = "DTree-Beta"
+        self.algo_name = "DTree-Alt"
         self.num_arms = 3
         self.tree_depth = 4
+        self.min_samples_split = 37
+        self.min_samples_leaf = 11
+        self.max_leaf_nodes = 4
         self.criterion = "gini"
-        self.alternative_features = True
-        self.mode = "beta"
+        self.feature_set = "exdended"
 
 class ConfigTreeHeuristicBasic(ConfigTreeHeuristic):
     def __init__(self, output_path):
         super().__init__(output_path)
-        self.algo_name = "DTree-Basic-Beta"
-        self.alternative_features = False
-        self.mode = "beta"
-
-class ConfigTreeHeuristicUCB(ConfigTreeHeuristic):
-    def __init__(self, output_path):
-        super().__init__(output_path)
-        self.algo_name = "DTree-UCB"
-        self.num_arms = 3
+        self.algo_name = "DTree"
+        self.feature_set = "clinical"
         self.tree_depth = 4
-        self.criterion = "gini"
-        self.alternative_features = True
-        self.mode = "UCB"
-
-
-class ConfigTreeHeuristicBasicUCB(ConfigTreeHeuristic):
-
-    def __init__(self, output_path):
-        super().__init__(output_path)
-        self.algo_name = "DTree-Basic-UCB"
-        self.alternative_features = False
-        self.mode = "UCB"
 
 
 class ConfigLasso(ConfigCommon):
@@ -129,13 +111,9 @@ def get_config(algo_name, output_path):
         return ConfigLinUCBDisjoint(output_path)
     elif algo_name == "linucb_disjoint_basic":
         return ConfigLinUCBDisjointBasic(output_path)
-    elif algo_name == "tree_beta":
+    elif algo_name == "tree":
         return ConfigTreeHeuristic(output_path)
-    elif algo_name == "tree_basic_beta":
+    elif algo_name == "tree_basic":
         return ConfigTreeHeuristicBasic(output_path)
-    elif algo_name == "tree_ucb":
-        return ConfigTreeHeuristicUCB(output_path)
-    elif algo_name == "tree_basic_ucb":
-        return ConfigTreeHeuristicBasicUCB(output_path)
     elif algo_name == "lasso":
         return ConfigLasso(output_path)
