@@ -1,4 +1,5 @@
 import logging
+import numpy as np
 from util import *
 
 
@@ -71,6 +72,8 @@ class Recommender(object):
         """
         regrets, mistakes = [], []
         payoffs, conf_intervals = [], []
+        risks = np.zeros((3, 3), dtype=int)  # keep track of decisions made
+
         for index in indices:
             patient = patients[index]
             features = self.get_features(patient)
@@ -90,15 +93,17 @@ class Recommender(object):
             regret = self.get_reward(label, label) - reward
             regrets.append(regret)
             mistakes.append(0 if action == label else 1)
+            risks[label][action] += 1
+
             if payoff is not None:
                 payoffs.append(payoff)
             if conf_interval is not None:
                 conf_intervals.append(conf_interval)
 
-        return regrets, mistakes, payoffs, conf_intervals
+        return regrets, mistakes, payoffs, conf_intervals, risks
 
-    def plot(self):
-        """
-        Called when last iteration is finished. May be used for output extra charts
-        """
-        pass
+    # def plot(self):
+    #     """
+    #     Called when last iteration is finished. May be used for output extra charts
+    #     """
+    #     pass
