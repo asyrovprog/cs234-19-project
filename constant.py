@@ -93,5 +93,3 @@ VKORC1_GENO_FEATURES = [VKORC1_1639, VKORC1_497, VKORC1_1173, VKORC1_1542,
 ALGOS = ["fixed_dose", "clinical_dose", "linucb_disjoint", "linucb_disjoint_basic",
          "lasso", "tree_basic", "tree"]
 
-# ALGOS = ["fixed_dose", "clinical_dose", "tree_basic", "tree"]
-
