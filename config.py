@@ -23,6 +23,9 @@ class ConfigCommon:
         s = "training" if is_training else "testing"
         return f"{self.output_path}{s}_conf_interval_{model}.csv"
 
+    def get_risk_filename(self, model, is_training):
+        s = "training" if is_training else "testing"
+        return f"{self.output_path}{s}_risk_{model}.csv"
 
 class ConfigFixedDose(ConfigCommon):
 

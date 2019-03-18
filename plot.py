@@ -5,6 +5,7 @@ import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
+from matplotlib.patches import Rectangle
 import seaborn as sns
 
 
@@ -91,12 +92,51 @@ def plot_model_regrets(filename, result_timestamp, models, closeup=False):
                            plot_title="Algorithm Comparison - Cumulative Expected Regret", closeup=closeup)
 
 
+def read_risk_file(model, result_timestamp):
+    df = pd.read_csv(f"results/{result_timestamp}/training_risk_{model}.csv", header=None)
+    df = df.sum(axis=0).values.reshape((3, 3))
+    df = pd.DataFrame(data=df, columns=["Low", "Medium", "High"], index=["True_Low", "True_Medium", "True_High"])
+    total = df.sum(axis=1)
+    total = total * 100 / total.sum()
+    df = df.transpose().apply(lambda x: round(x / x.sum(), 4)).transpose()
+    df["Total"] = total
+    return df
+
+
+def plot_confusion_matrix(data, model, xticklabels, yticklabels, i, cbar_ax):
+    ax = sns.heatmap(data, annot=True, vmin=0, vmax=1, cmap="Blues", cbar=i == 0,
+                     yticklabels=yticklabels, xticklabels=xticklabels, cbar_ax=None if i else cbar_ax)
+    ax.add_patch(Rectangle((0, 0), 1, 1, fill=False, edgecolor='limegreen', lw=3))
+    ax.add_patch(Rectangle((1, 1), 1, 1, fill=False, edgecolor='limegreen', lw=3))
+    ax.add_patch(Rectangle((2, 2), 1, 1, fill=False, edgecolor='limegreen', lw=3))
+    ax.add_patch(Rectangle((0, 2), 1, 1, fill=False, edgecolor='red', lw=3))
+    ax.add_patch(Rectangle((2, 0), 1, 1, fill=False, edgecolor='red', lw=3))
+    plt.xlabel(f"{model} Assigned Dosage")
+    plt.ylabel("True Dosage")
+
+
+def plot_model_risks(filename, result_timestamp, models):
+    figure(num=None, figsize=(20, 10), dpi=100, facecolor='w', edgecolor='k')
+    cbar_ax = plt.axes([.91, .3, .01, .4])
+    for i in range(len(models)):
+        df = read_risk_file(models[i], result_timestamp)
+        yticklabels=[f"Low\n({df.iloc[0][3].astype(int)}%)", f"Medium\n({df.iloc[1][3].astype(int)}%)",
+                     f"High\n({df.iloc[2][3].astype(int)}%)"]
+        xticklabels=["Low", "Medium", "High"]
+        plt.subplot(2, 4, i+1)
+        plot_confusion_matrix(df.iloc[:,:3], models[i], xticklabels, yticklabels, i, cbar_ax)
+    plt.subplots_adjust(wspace = 0.4, hspace = 0.4)
+    plt.suptitle("Risk Analysis - Assigned Dosage Confusion Matrix")
+    plt.savefig(filename)
+    plt.close()
+
+
 if __name__ == '__main__':
     args = parser.parse_args()
 
     # Plot 1: "Fraction of Incorrect Decisions"
     models = ["FixedDose", "ClinicalDose", "LinUCBDisjoint", "LinUCBDisjointBasic",
-              "DTree-Beta", "DTree-Basic-Beta", "DTree-UCB", "DTree-Basic-UCB", "Lasso"]
+              "DTree-Beta", "DTree-Basic-Beta", "Lasso"]
     imgfile = "err_all_models.png"
     plot_model_errs(f"results/{args.timestamp}/{imgfile}", args.timestamp, models, ci=None, closeup=False)
 
@@ -104,3 +144,6 @@ if __name__ == '__main__':
     imgfile = "regret_all_models.png"
     plot_model_regrets(f"results/{args.timestamp}/{imgfile}", args.timestamp, models, closeup=False)
 
+    # Plot 3: "Risk Analysis - Assigned Dosage Confusion Matrix"
+    imgfile = "risk_all_models.png"
+    plot_model_risks(f"results/{args.timestamp}/{imgfile}", args.timestamp, models)
