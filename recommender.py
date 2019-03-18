@@ -101,9 +101,3 @@ class Recommender(object):
                 conf_intervals.append(conf_interval)
 
         return regrets, mistakes, payoffs, conf_intervals, risks
-
-    def plot(self):
-        """
-        Called when last iteration is finished. May be used for output extra charts
-        """
-        pass
