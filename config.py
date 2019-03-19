@@ -70,10 +70,16 @@ class ConfigTreeHeuristic(ConfigCommon):
         super().__init__(output_path)
         self.algo_name = "DTree-Alt"
         self.num_arms = 3
+
+        #
+        # we set default parameters for tree per
+        # https://medium.com/@mohtedibf/indepth-parameter-tuning-for-decision-tree-6753118a03c3
+        #
         self.tree_depth = 4
         self.min_samples_split = 37
         self.min_samples_leaf = 11
         self.max_leaf_nodes = 4
+
         self.criterion = "gini"
         self.feature_set = "exdended"
 
