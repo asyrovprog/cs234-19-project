@@ -56,16 +56,16 @@ class TreeHeuristicRecommender(Recommender):
         """
         Extended set of features
         """
-        f = list([patient.properties[AGE].value]) + self.get_clinical_meds(patient)
+        f = list([patient.properties[AGE].value]) + self.get_clinical_meds(patient) # size: 3
 
         f.append(feature_scaling(BMI_MIN, BMI_MAX,
-                                 get_bmi(patient.properties[HEIGHT], patient.properties[WEIGHT])))
+                                 get_bmi(patient.properties[HEIGHT], patient.properties[WEIGHT])))  # size: 1
 
-        f += get_one_hot(patient.properties[GENDER])
-        f += get_one_hot(patient.properties[VKORC1_1639])
-        f += get_one_hot(patient.properties[ASPIRIN])
-        f += get_one_hot(patient.properties[SMOKER])
-        f += get_one_hot(patient.properties[IS_STABLE])
+        f += get_one_hot(patient.properties[GENDER])    # size: 3
+        f += get_one_hot(patient.properties[VKORC1_1639])   # size: 4
+        f += get_one_hot(patient.properties[ASPIRIN])   # size: 3
+        f += get_one_hot(patient.properties[SMOKER])    # size: 3
+        f += get_one_hot(patient.properties[IS_STABLE]) # size: 3
 
         return np.array(f)
 
