@@ -75,6 +75,10 @@ BMI_MIN = 0
 # 4 features with numeric values
 NUMERICAL_FEATURES = [HEIGHT, WEIGHT, TARGET_INR, INR]
 
+# MEDS
+MEDICATION_FEATURES = [ASPIRIN, TYLENOL, ZOCOR, LIPITOR, LESCOL, MEVACOR, PRAVACHOL, CRESTOR, BAYCOL, CORDARONE,
+               TEGRETOL, DILANTIN, RIFAMPIN, SULFONAMIDE, MACROLIDE]
+
 # 23 features with binary values
 BINARY_FEATURES = [DIABETES, CHF, VALVE_REPLACE, ASPIRIN, TYLENOL, WAS_DOSE, ZOCOR, LIPITOR,
 LESCOL, MEVACOR, PRAVACHOL, CRESTOR, BAYCOL, CORDARONE, TEGRETOL, DILANTIN, RIFAMPIN, SULFONAMIDE,
@@ -87,6 +91,5 @@ VKORC1_GENO_FEATURES = [VKORC1_1639, VKORC1_497, VKORC1_1173, VKORC1_1542,
 
 # command line options for algorithms
 ALGOS = ["fixed_dose", "clinical_dose", "linucb_disjoint", "linucb_disjoint_basic",
-         "lasso",
-         "tree_beta", "tree_basic_beta", "tree_ucb", "tree_basic_ucb"]
+         "lasso", "tree_basic", "tree"]
 
