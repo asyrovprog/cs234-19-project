@@ -95,10 +95,10 @@ class ConfigLasso(ConfigCommon):
         # Essentially disable force sampling. We found it offers little
         # benefit to the training.
         self.q = 1
-        self.n = 1
-        self.h = 1
-        self.lambda1 = 0.1
-        self.lambda2 = 0.01
+        self.n = 10
+        self.h = 5
+        self.lambda1 = 0.05
+        self.lambda2 = 0.05
 
 
 def get_config(algo_name, output_path):

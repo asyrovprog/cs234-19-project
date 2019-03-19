@@ -181,34 +181,3 @@ class LassoBandit(Recommender):
 
         self.forced = False
         return self._get_best_arm(potential_arms, features), None, None
-
-
-# if __name__ == "__main__":
-#     from config import ConfigLasso
-#     import evaluation
-#     import warfarin
-#
-#     path_base = "results/Lasso/"
-#
-#     for h in [0.1, 0.2, 0.4, 0.8, 1.6]:
-#         for lambda1 in [2.0, 4.0, 8.0]:
-#             for lambda2 in [2.0, 4.0, 8.0]:
-#                 output_path = path_base + "h_%.1f_lam1_%.1f_lam2_%.1f_" % (
-#                     h, lambda1, lambda2
-#                 )
-#                 config = ConfigLasso(output_path)
-#                 config.q = 100
-#                 config.n = 1
-#                 config.h = h
-#                 config.lambda1 = lambda1
-#                 config.lambda2 = lambda2
-#
-#                 lasso = LassoBandit(config)
-#
-#                 patients = warfarin.load_data("data/warfarin.csv")
-#                 models = [lasso]
-#                 iters = 3
-#                 train_ratio = 1.0
-#
-#                 print("h:", h, "lambda1:", lambda1, "lambda2:", lambda2)
-#                 evaluation.run(patients, models, iters, train_ratio, verbose=True)
