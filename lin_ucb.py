@@ -90,7 +90,7 @@ class LinUCBDisjointRecommender(Recommender):
         self.A[arm] += np.outer(context_feature, context_feature)
         self.b[arm] += reward * np.reshape(context_feature, (self.d, 1))
 
-    def recommend(self, patient):
+    def recommend(self, patient, eval_results, iter, patient_idx):
         payoff = {}
         best_arm = None
         best_payoff = -float('inf')

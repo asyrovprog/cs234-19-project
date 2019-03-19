@@ -17,13 +17,15 @@ class EvalResults:
         """
         self.is_training = is_training
         self.models = models
+        self.actions = [[[]for i in range(num_iter)] for j in range(len(models))]
         self.regrets = [[[]for i in range(num_iter)] for j in range(len(models))]
         self.mistakes = [[[] for i in range(num_iter)] for j in range(len(models))]
         self.payoffs = [[[]for i in range(num_iter)] for j in range(len(models))]
         self.conf_intervals = [[[]for i in range(num_iter)] for j in range(len(models))]
         self.risks = [[[] for i in range(num_iter)] for j in range(len(models))]
 
-    def log_results(self, model_idx, iter_idx, regrets, mistakes, payoffs, conf_intervals, risks):
+    def log_results(self, model_idx, iter_idx, actions, regrets, mistakes, payoffs, conf_intervals, risks):
+        self.actions[model_idx][iter_idx] = actions
         self.regrets[model_idx][iter_idx] = regrets
         self.mistakes[model_idx][iter_idx] = mistakes
         self.payoffs[model_idx][iter_idx] = payoffs
@@ -33,6 +35,8 @@ class EvalResults:
     def export_results(self):
         for m in range(len(self.models)):
             model_config = self.models[m].config
+            export_stats_list(self.actions[m],
+                              model_config.get_action_filename(model_config.algo_name, self.is_training))
             export_stats_list(self.regrets[m],
                               model_config.get_regret_filename(model_config.algo_name, self.is_training))
             export_stats_list(self.mistakes[m],
@@ -147,10 +151,11 @@ def run(patients, models, num_iter=1, trainset_ratio=0.8, verbose=False):
                 if verbose:
                     print(msg)
 
-                training_regrets, training_mistakes, training_payoffs, training_conf_intervals, training_risks = \
-                    model.run(patients, training_indices, is_training=True)
+                training_actions, training_regrets, training_mistakes, training_payoffs, \
+                training_conf_intervals, training_risks = \
+                    model.run(patients, training_indices, training_results, i, is_training=True)
                 # log training regret, estimated payoff & its confidence interval
-                training_results.log_results(m, i, training_regrets, training_mistakes,
+                training_results.log_results(m, i, training_actions, training_regrets, training_mistakes,
                                              training_payoffs, training_conf_intervals, training_risks)
 
                 msg = f"mean regret: {training_results.get_per_iter_mean_regret_for_model(m, i)}, " \
@@ -166,10 +171,11 @@ def run(patients, models, num_iter=1, trainset_ratio=0.8, verbose=False):
                 if verbose:
                     print(msg)
 
-                testing_regrest, testing_mistakes, testing_payoffs, testing_conf_intervals, testing_risks = \
-                    model.run(patients, testing_indices, is_training=False)
+                testing_actions, testing_regrest, testing_mistakes, testing_payoffs, \
+                testing_conf_intervals, testing_risks = \
+                    model.run(patients, testing_indices, testing_results, i, is_training=False)
                 # log testing regret, estimated payoff & its confidence interval
-                testing_results.log_results(m, i, testing_regrest, testing_mistakes,
+                testing_results.log_results(m, i, testing_actions, testing_regrest, testing_mistakes,
                                             testing_payoffs, testing_conf_intervals, testing_risks)
 
                 msg = f"mean regret: {testing_results.get_per_iter_mean_regret_for_model(m, i)}, " \

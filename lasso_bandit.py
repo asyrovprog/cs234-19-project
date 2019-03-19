@@ -167,7 +167,7 @@ class LassoBandit(Recommender):
                 best_arm = a
         return best_arm
 
-    def recommend(self, patient):
+    def recommend(self, patient, eval_results, iter, patient_idx):
         self.t += 1
 
         force_arm = self._get_force_arm(self.t)

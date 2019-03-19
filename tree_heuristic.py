@@ -156,7 +156,7 @@ class TreeHeuristicRecommender(Recommender):
         F = result[class_ids[LABEL_FAILED]] if LABEL_FAILED in class_ids else 0
         return F, S
 
-    def recommend(self, patient):
+    def recommend(self, patient, eval_results, iter, patient_idx):
         x_t = self.get_features(patient)
         # distrubutions for arms
         p_a = [self.query_distribution(a, x_t) for a in range(self.num_arms)]
