@@ -107,14 +107,13 @@ class ConfigLasso(ConfigCommon):
         self.algo_name = "Lasso"
 
         self.num_arms = 3
-        # At the beginning we force sample each arm 20 times and this will be the only
-        # time we force sample.
-        self.q = 20
+        # Essentially disable force sampling. We found it offers little
+        # benefit to the training.
+        self.q = 1
         self.n = 1
-        # Include all arms..
-        self.h = 10
-        self.lambda1 = 1.0
-        self.lambda2 = 1.0
+        self.h = 1
+        self.lambda1 = 0.1
+        self.lambda2 = 0.01
 
 
 def get_config(algo_name, output_path):

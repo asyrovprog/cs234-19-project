@@ -1,8 +1,4 @@
-import numpy as np
-import logging
 from recommender import *
-from feature import *
-from constant import *
 from preprocess import *
 from sklearn.linear_model import Lasso
 from collections import defaultdict
@@ -73,11 +69,11 @@ class LassoBandit(Recommender):
         # Initialize force sample schedule.
         for a in range(self.num_arms):
             K = self.num_arms
-            q = 1
+            q = self.q
             # In the paper the arm starts from 1.
             i = a + 1
             for j in range(q * (i - 1) + 1, q * i + 1):
-                for n in range(10):
+                for n in range(self.n):
                     self.force_sample_iter[a].add((2 ** n - 1) * K * q + j)
 
     def _train(self, lam, X, y):
@@ -93,11 +89,30 @@ class LassoBandit(Recommender):
         :return: feature vector for the given patient
         """
 
-        features = [1, patient.properties[AGE].value, patient.properties[HEIGHT],
-                    patient.properties[WEIGHT]]  # size: 3
+        features = list([1, patient.properties[AGE].value])   # size 2
+
+        # features += [patient.properties[f] for f in NUMERICAL_FEATURES]     # size 4
+        # features.append(get_bmi(patient.properties[HEIGHT], patient.properties[WEIGHT]))    # size 1
+        features.append(feature_scaling(BMI_MIN, BMI_MAX, get_bmi(patient.properties[HEIGHT],
+                                                                  patient.properties[WEIGHT])))   # size 1
+        # features.append(feature_scaling(HEIGHT_MIN, HEIGHT_MAX, patient.properties[HEIGHT]))    # size 1
+        # features.append(feature_scaling(WEIGHT_MIN, WEIGHT_MAX, patient.properties[WEIGHT]))    # size 1
+        features.append(feature_scaling(INR_MIN, INR_MAX, patient.properties[INR]))    # size 1
+        features.append(feature_scaling(INR_MIN, INR_MAX, patient.properties[TARGET_INR]))    # size 1
+
+        features += get_one_hot_from_list(patient.properties[INDICATION])   # size: 9
+
         features += get_one_hot(patient.properties[GENDER])  # size: 3
         features += get_one_hot(patient.properties[RACE])  # size: 5
-        features += get_one_hot(patient.properties[VKORC1_1639])  # size: 4
+
+        for f in BINARY_FEATURES:
+            features += get_one_hot(patient.properties[f]) # size: 23 * 3 = 69
+
+        features += get_one_hot_from_list(patient.properties[CYP2C9]) # size: 15
+
+        for f in VKORC1_GENO_FEATURES:
+            features += get_one_hot(patient.properties[f]) # size: 7 * 4 = 28
+
         return np.array(features)
 
     def update(self, arm, context_feature, reward):
@@ -122,7 +137,6 @@ class LassoBandit(Recommender):
                 self.all_sample_X[arm],
                 self.all_sample_y[arm]
             )
-
 
     def _get_force_arm(self, t):
         for a in range(self.num_arms):
@@ -159,7 +173,6 @@ class LassoBandit(Recommender):
         force_arm = self._get_force_arm(self.t)
         if force_arm is not None:
             self.forced = True
-            # print("force arm:", force_arm)
             return force_arm, None, None
 
         features = self.get_features(patient)
@@ -168,3 +181,34 @@ class LassoBandit(Recommender):
 
         self.forced = False
         return self._get_best_arm(potential_arms, features), None, None
+
+
+# if __name__ == "__main__":
+#     from config import ConfigLasso
+#     import evaluation
+#     import warfarin
+#
+#     path_base = "results/Lasso/"
+#
+#     for h in [0.1, 0.2, 0.4, 0.8, 1.6]:
+#         for lambda1 in [2.0, 4.0, 8.0]:
+#             for lambda2 in [2.0, 4.0, 8.0]:
+#                 output_path = path_base + "h_%.1f_lam1_%.1f_lam2_%.1f_" % (
+#                     h, lambda1, lambda2
+#                 )
+#                 config = ConfigLasso(output_path)
+#                 config.q = 100
+#                 config.n = 1
+#                 config.h = h
+#                 config.lambda1 = lambda1
+#                 config.lambda2 = lambda2
+#
+#                 lasso = LassoBandit(config)
+#
+#                 patients = warfarin.load_data("data/warfarin.csv")
+#                 models = [lasso]
+#                 iters = 3
+#                 train_ratio = 1.0
+#
+#                 print("h:", h, "lambda1:", lambda1, "lambda2:", lambda2)
+#                 evaluation.run(patients, models, iters, train_ratio, verbose=True)
