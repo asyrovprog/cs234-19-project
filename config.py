@@ -70,10 +70,16 @@ class ConfigTreeHeuristic(ConfigCommon):
         super().__init__(output_path)
         self.algo_name = "DTree-Alt"
         self.num_arms = 3
+
+        #
+        # we set default parameters for tree per
+        # https://medium.com/@mohtedibf/indepth-parameter-tuning-for-decision-tree-6753118a03c3
+        #
         self.tree_depth = 4
         self.min_samples_split = 37
         self.min_samples_leaf = 11
         self.max_leaf_nodes = 4
+
         self.criterion = "gini"
         self.feature_set = "exdended"
 
@@ -92,14 +98,13 @@ class ConfigLasso(ConfigCommon):
         self.algo_name = "Lasso"
 
         self.num_arms = 3
-        # At the beginning we force sample each arm 20 times and this will be the only
-        # time we force sample.
-        self.q = 20
-        self.n = 1
-        # Include all arms..
-        self.h = 10
-        self.lambda1 = 1.0
-        self.lambda2 = 1.0
+        # Essentially disable force sampling. We found it offers little
+        # benefit to the training.
+        self.q = 1
+        self.n = 10
+        self.h = 5
+        self.lambda1 = 0.05
+        self.lambda2 = 0.05
 
 
 def get_config(algo_name, output_path):
