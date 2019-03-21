@@ -6,20 +6,22 @@
     - **appx.pdf**: appendix file providing the context
     - **metadata.xls**: meta data describing the columns of the data set
     - **warfarin.csv**: original dataset with 5700 patient records
-- `logs` - where log files are located
 - `results` - where run results and plots are stored
 - `clinical_dose.py` - subclass of `Recommender` with implementation of Warfarin Clinical Dosing Algorithm
 - `config.py` - configuration classes for algorithms.
 - `constant.py` - define constants.
+- `ensemble_majority3.py` - subclass of `Recommeder` with implementation of majority vote ensemble algorithm
 - `evaluation.py` - utilities for evaluating algorithms.
 - `feature.py` - define all enums for features
 - `fixed_dose.py` - subclass of `Recommender` with implementation of fixed dose algorithm
-- `lin_ucb.py` - subclass of `Recommender` with implementation of LinUCB algorithms (disjoint & hybrid).
+- `lasso_bandit.py` - subclass of `Recommeder` with implementation of Lasso bandit algorithm
+- `lin_ucb.py` - subclass of `Recommender` with implementation of LinUCB algorithm (disjoint).
 - `patient.py` - encapsulate all info about a patient
-- `plot.py` - offline batch plotting utility to generate plots from a result set from a previous recommender run
+- `plotting.ipynb` - jupyter notebook to generate plots from a result set from a previous run
 - `preprocess.py` - handles all pre-processing of the patient data
 - `recommender.py` - abstract `Recommender` class to represent a recommendation model
 - `requirements.txt` - for installing required libraries
+- `tree_heuristic.py` - subclass of `Recommender` with implementation of DTree algorithm.
 - `util.py` - utilities to load and preprocess warfarin dataset
 - `warfarin.py` - the `main` program to run Warfarin dosage recommendations
 
@@ -60,15 +62,10 @@ $ python warfarin.py --algo=all --iter=10 --train_ratio=0.7
 
 ### Generate Plots from Result Set
 ```
-python plot.py --timestamp=[result_set_timestamp]
+jupyter notebook
 ```
-- `[result_set_timestamp]`: subfolder name under `results` folder where a result set from a previous run is located.
-- The output `.png` plot image files are located in the same subfolder: `results\[result_set_timestamp]`
-#### Example:
-- Generate plots from the result set located in `results\20190316_115830`:
-```
-$ python plot.py --timestamp=20190316_115830
-```
+- Launch Jupyter notebook
+- open plotting.ipynb and run the cells
 
 
 ## RESOURCES
@@ -81,19 +78,3 @@ $ python plot.py --timestamp=20190316_115830
   2. [Contextual Bandits with Linear Payoff Functions](http://proceedings.mlr.press/v15/chu11a/chu11a.pdf)
   3. [Online Decision-Making with High-Dimensional Covariates](http://web.stanford.edu/~bayati/papers/lassoBandit.pdf)
   4. [A Practical Method for Solving Contextual Bandit Problems Using Decision Trees](https://arxiv.org/pdf/1706.04687.pdf)
-
-## TODO's
-- [X] implement "Imputation of VKORC1 SNPs"
-- [X] add better data preprocessing. Use one-hot encoding for categorical feature, etc.
-- [X] add model eval logging.
-- [X] implement linear bandit
-- [X] alternate learning/evaluation approach
-- [X] explore feature normalization
-- [X] add new feature (BMI instead of height/weight? INR data?)
-- [X] implement LinUCBDisjointBasic to use same feature set as ClinicalDose
-- [ ] variations of LinUCB (hybrid, SupLin?)
-- [X] implement Tree Heuristic bandit
-- [X] implement Lasso bandit
-- [X] export training and testing results to file
-- [X] create combined plots
-- [ ] experiment with LinUCB's hyperparameter alpha value?
