@@ -8,6 +8,10 @@ class ConfigCommon:
         self.output_path = output_path
         self.ensemble_list = ["LinUCBDisjoint", "DTree-Alt", "Lasso"]
 
+    def get_truth_filename(self, is_training):
+        s = "training" if is_training else "testing"
+        return f"{self.output_path}{s}_truth.csv"
+
     def get_action_filename(self, model, is_training):
         s = "training" if is_training else "testing"
         return f"{self.output_path}{s}_action_{model}.csv"
