@@ -34,7 +34,7 @@ class ClinicalDoseRecommender(Recommender):
 
         return np.array(features)
 
-    def recommend(self, patient):
+    def recommend(self, patient, eval_results, iter, patient_idx):
         """
         Recommend an action.
 

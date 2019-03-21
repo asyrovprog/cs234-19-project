@@ -15,7 +15,7 @@ class FixedDoseRecommender(Recommender):
         """
         return 1
 
-    def recommend(self, features):
+    def recommend(self, patient, eval_results, iter, patient_idx):
         """
         Recommend an action.
 

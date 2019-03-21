@@ -47,7 +47,7 @@ class Recommender(object):
         """
         pass
 
-    def recommend(self, patient):
+    def recommend(self, patient, eval_results, iter, patient_idx):
         """
         Recommend an action.
 
@@ -59,7 +59,7 @@ class Recommender(object):
         """
         pass
 
-    def run(self, patients, indices, is_training=False):
+    def run(self, patients, indices, eval_results, iter, is_training=False):
         """
         Run the model with the provided patient data set.
         When training mode is set to True, the model internal weights are updated.
@@ -71,10 +71,11 @@ class Recommender(object):
         :return: lists of regrets and mistakes
         """
         regrets, mistakes = [], []
-        payoffs, conf_intervals = [], []
+        actions, payoffs, conf_intervals = [], [], []
         risks = np.zeros((3, 3), dtype=int)  # keep track of decisions made
 
-        for index in indices:
+        for i in range(len(indices)):
+            index = indices[i]
             patient = patients[index]
             features = self.get_features(patient)
             # skip insufficient records
@@ -83,7 +84,8 @@ class Recommender(object):
             # ground truth
             label = patient.properties[DOSE]
 
-            action, payoff, conf_interval = self.recommend(patient)
+            action, payoff, conf_interval = self.recommend(patient, eval_results, iter, i)
+            actions.append(action)
             reward = self.get_reward(action, label)
 
             # only updates the model params in training mode
@@ -100,4 +102,4 @@ class Recommender(object):
             if conf_interval is not None:
                 conf_intervals.append(conf_interval)
 
-        return regrets, mistakes, payoffs, conf_intervals, risks
+        return actions, regrets, mistakes, payoffs, conf_intervals, risks

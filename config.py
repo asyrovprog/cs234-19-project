@@ -6,6 +6,15 @@ class ConfigCommon:
     def __init__(self, output_path):
         # output config
         self.output_path = output_path
+        self.ensemble_list = ["LinUCBDisjoint", "DTree-Alt", "Lasso"]
+
+    def get_truth_filename(self, is_training):
+        s = "training" if is_training else "testing"
+        return f"{self.output_path}{s}_truth.csv"
+
+    def get_action_filename(self, model, is_training):
+        s = "training" if is_training else "testing"
+        return f"{self.output_path}{s}_action_{model}.csv"
 
     def get_regret_filename(self, model, is_training):
         s = "training" if is_training else "testing"
@@ -107,6 +116,16 @@ class ConfigLasso(ConfigCommon):
         self.lambda2 = 0.05
 
 
+class ConfigEnsembleMajority3(ConfigCommon):
+
+    def __init__(self, output_path):
+        super().__init__(output_path)
+        self.algo_name = "Majority3"
+
+        # parameters for the model
+        self.fixed_dose = DOSE_MED
+
+
 def get_config(algo_name, output_path):
     if algo_name == "fixed_dose":
         return ConfigFixedDose(output_path)
@@ -122,3 +141,5 @@ def get_config(algo_name, output_path):
         return ConfigTreeHeuristicBasic(output_path)
     elif algo_name == "lasso":
         return ConfigLasso(output_path)
+    elif algo_name == "majority3":
+        return ConfigEnsembleMajority3(output_path)

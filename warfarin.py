@@ -10,6 +10,7 @@ from lin_ucb import *
 from tree_heuristic import *
 from patient import *
 from lasso_bandit import *
+from ensemble_majority3 import *
 
 
 parser = argparse.ArgumentParser()
@@ -19,21 +20,23 @@ parser.add_argument("--iter", required=False, type=int)
 parser.add_argument("--train_ratio", required=False, type=float)
 
 
-def get_recommender(algo, config):
+def get_recommender(algo, output_path):
 
     # default recommender: FixedDose
-    model = FixedDoseRecommender(ConfigFixedDose(config))
+    model = FixedDoseRecommender(get_config(algo, output_path))
 
     if algo == "clinical_dose":
-        model = ClinicalDoseRecommender(ConfigClinicalDose(config))
+        model = ClinicalDoseRecommender(get_config(algo, output_path))
     elif algo == "linucb_disjoint":
-        model = LinUCBDisjointRecommender(ConfigLinUCBDisjoint(config))
+        model = LinUCBDisjointRecommender(get_config(algo, output_path))
     elif algo == "linucb_disjoint_basic":
-        model = LinUCBDisjointBasicRecommender(ConfigLinUCBDisjointBasic(config))
+        model = LinUCBDisjointBasicRecommender(get_config(algo, output_path))
     elif algo.startswith("tree"):
         model = TreeHeuristicRecommender(get_config(algo, output_path))
     elif algo == "lasso":
-        model = LassoBandit(ConfigLasso(config))
+        model = LassoBandit(get_config(algo, output_path))
+    elif algo == "majority3":
+        model = Majority3Recommender(get_config(algo, output_path))
     return model
 
 

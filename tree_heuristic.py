@@ -56,16 +56,16 @@ class TreeHeuristicRecommender(Recommender):
         """
         Extended set of features
         """
-        f = list([patient.properties[AGE].value]) + self.get_clinical_meds(patient)
+        f = list([patient.properties[AGE].value]) + self.get_clinical_meds(patient) # size: 3
 
         f.append(feature_scaling(BMI_MIN, BMI_MAX,
-                                 get_bmi(patient.properties[HEIGHT], patient.properties[WEIGHT])))
+                                 get_bmi(patient.properties[HEIGHT], patient.properties[WEIGHT])))  # size: 1
 
-        f += get_one_hot(patient.properties[GENDER])
-        f += get_one_hot(patient.properties[VKORC1_1639])
-        f += get_one_hot(patient.properties[ASPIRIN])
-        f += get_one_hot(patient.properties[SMOKER])
-        f += get_one_hot(patient.properties[IS_STABLE])
+        f += get_one_hot(patient.properties[GENDER])    # size: 3
+        f += get_one_hot(patient.properties[VKORC1_1639])   # size: 4
+        f += get_one_hot(patient.properties[ASPIRIN])   # size: 3
+        f += get_one_hot(patient.properties[SMOKER])    # size: 3
+        f += get_one_hot(patient.properties[IS_STABLE]) # size: 3
 
         return np.array(f)
 
@@ -156,7 +156,7 @@ class TreeHeuristicRecommender(Recommender):
         F = result[class_ids[LABEL_FAILED]] if LABEL_FAILED in class_ids else 0
         return F, S
 
-    def recommend(self, patient):
+    def recommend(self, patient, eval_results, iter, patient_idx):
         x_t = self.get_features(patient)
         # distrubutions for arms
         p_a = [self.query_distribution(a, x_t) for a in range(self.num_arms)]

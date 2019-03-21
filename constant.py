@@ -36,10 +36,10 @@ SULFONAMIDE = "Sulfonamide Antibiotics"
 MACROLIDE = "Macrolide Antibiotics"
 ANTI_FUNGAL = "Anti-fungal Azoles"
 HERBAL = "Herbal Medications, Vitamins, Supplements"
-TARGET_INR = "Target INR"   # not used
+TARGET_INR = "Target INR"
 EST_TARGET_INR = "Estimated Target INR Range Based on Indication"   # not used
 IS_STABLE = "Subject Reached Stable Dose of Warfarin"
-INR = "INR on Reported Therapeutic Dose of Warfarin"    # not used
+INR = "INR on Reported Therapeutic Dose of Warfarin"
 
 # Genotypes: 8
 CYP2C9 = "CYP2C9 consensus"
@@ -91,5 +91,5 @@ VKORC1_GENO_FEATURES = [VKORC1_1639, VKORC1_497, VKORC1_1173, VKORC1_1542,
 
 # command line options for algorithms
 ALGOS = ["fixed_dose", "clinical_dose", "linucb_disjoint", "linucb_disjoint_basic",
-         "lasso", "tree_basic", "tree"]
+         "lasso", "tree_basic", "tree", "majority3"]
 
