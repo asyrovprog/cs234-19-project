@@ -65,7 +65,7 @@ $ python warfarin.py --algo=all --iter=10 --train_ratio=0.7
 jupyter notebook
 ```
 - Launch Jupyter notebook
-- open plotting.ipynb and run the cells
+- open `plotting.ipynb` and run the cells
 
 
 ## RESOURCES
