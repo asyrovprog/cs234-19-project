@@ -2,7 +2,7 @@
 
 Sources for CS234 Project - Estimation of the Warfarin Dose.
 
-[Paper](CS234-Paper.pdf)
+[Paper](https://github.com/asyrovprog/cs234-19-project/blob/master/CS234_Paper.pdf)
 
 
 ## FILES
